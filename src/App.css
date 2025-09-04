@@ -1,6 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 body{
     background-image: linear-gradient(to top left, #1E1A3D, #59168B, #12182F);
     width: 100%;
     height: 100vh;
-    font-family: Jura;
+}
+
+/* Для всех параграфов и текстовых элементов */
+p, span, div, textarea, input, button, li {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+/* Для заголовков оставляем Jura */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Jura', sans-serif;
+  /* Ваши существующие стили для Jura */
 }
