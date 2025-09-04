@@ -17,6 +17,7 @@ function Sidebar() {
                 <p>Космическая сеть</p>
             </div>
         </div>
+        <div className='sidebar-content'>
         <div className='sidebar-search'>
           <icons.Search className='search-ico'/>
           <textarea placeholder='Поиск по галактике...'></textarea>
@@ -68,6 +69,7 @@ function Sidebar() {
                 </div>
             </div>
             
+        </div>
         </div>
       </div>
     </>

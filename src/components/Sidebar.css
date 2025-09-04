@@ -9,7 +9,17 @@
   margin: 0;
   align-items: center;
   top: 0;
+  position: fixed;
+}
+
+.sidebar-content{
+  width: 100%;
+  flex: 1; /* Занимает всё доступное пространство */
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20px;
 }
 
 
@@ -20,6 +30,7 @@
     gap: 10px;
     margin: 20px 0 0 0px;
     align-items: center;
+    flex-shrink: 0; /* Важно! */
 }
 
 .sidebar-logo{
@@ -41,6 +52,7 @@
 }
 
 .sidebar-search{
+    flex-shrink: 0 !important;
     display: flex;
     align-items: center;
     margin: 35px 0 0 0;
@@ -83,6 +95,7 @@
 }
 
 .sidebar-button{
+    flex-shrink: 0 !important;
     display: flex;
     align-items: center;
     height: 36px;
@@ -111,6 +124,7 @@
 }
 
 .sidebar-recomends{
+    flex-shrink: 0 !important;
     width: 89.8%;
     background-color: white;
     border-radius: 25px;
