@@ -70,6 +70,10 @@ function Sidebar() {
             </div>
             
         </div>
+        <div className='sidebar-research'>
+            <icons.Search className='sidebar-research-ico'/>
+            <p>Иследовать</p>
+        </div>
         </div>
       </div>
     </>
