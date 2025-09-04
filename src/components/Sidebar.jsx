@@ -58,7 +58,8 @@ function Sidebar() {
             <div className='sidebar-recomends-header'>
                 <icons.Star className='star'/>
                 <p>Популярные темы</p>
-                <div className='sidebar-recomends-posts'>
+            </div>
+            <div className='sidebar-recomends-posts'>
                     <h1>#Марсианская миссия</h1>
                     <p>1.2k постов</p>
                     <h1>#Звездные карты</h1>
@@ -67,7 +68,6 @@ function Sidebar() {
                     <p>645 постов</p>
                     <h1>#Орбитальные станции</h1>
                     <p>423 постов</p>
-                </div>
             </div>
             
         </div>

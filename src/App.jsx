@@ -7,7 +7,9 @@ function App() {
 
   return (
     <>
+    <body>
       <Sidebar />
+    </body>
     </>
   )
 }
