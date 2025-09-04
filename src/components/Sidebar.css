@@ -3,7 +3,7 @@
 .sidebar{
   display: flex;
   flex-direction: column;
-  background-color: indigo;
+  background-color: rgb(51, 0, 87);
   width: 320px;
   height: 910px;
   margin: 0;
@@ -41,4 +41,42 @@
 
 .sidebar-search{
     display: flex;
+    align-items: center;
+    margin: 35px 0 0 0;
+    width: 89.8%;
+    height: 50px;
+    background-color: #212241;
+    border-radius: 3.40282e38px;
+    border: 1px solid #4A2C79;
+    gap: 10px;
 }
+.sidebar-search:focus-within{
+    -webkit-tap-highlight-color: transparent; /* для мобильных */
+    user-select: none;
+    border: 2px solid #C27AFF;
+}
+.sidebar-search textarea{
+    text-align: left;
+    padding-top: 15px;
+    outline: none;
+    background: none;
+    color: #C27AFF;
+    font-size: 15px;
+    resize: none;
+    border: none;
+    width: 100%;
+    height: 100%;
+    
+} 
+.sidebar-search textarea::placeholder{
+    color:#C27AFF;
+}
+
+.search-ico{
+    width: 30px;
+    height: 30px;
+    margin-left:10px ;
+    color: #C27AFF;
+     
+}
+

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './Sidebar.css'
 
 function Sidebar() {
@@ -16,7 +17,10 @@ function Sidebar() {
                 <p>Космическая сеть</p>
             </div>
         </div>
-        <div className='sidebar-search'>Поиск по галактике...</div>
+        <div className='sidebar-search'>
+          <icons.Search className='search-ico'/>
+          <textarea placeholder='Поиск по галактике...'></textarea>
+        </div>
       </div>
     </>
   )
