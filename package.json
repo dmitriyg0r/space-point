@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/jura": "^5.2.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "svg-by-dreamsoftware": "^1.1.8"
