@@ -56,7 +56,7 @@ function Sidebar() {
         </div>
         <div className='sidebar-recomends'>
             <div className='sidebar-recomends-header'>
-                <h1>Популярные Темы</h1>
+                <p>Популярные темы</p>
                 <div className='sidebar-recomends-posts'>
                     <h1>#Марсианская миссия</h1>
                     <p>1.2k постов</p>

@@ -125,8 +125,33 @@
 
 .sidebar-recomends{
     flex-shrink: 0 !important;
+    height: 278px;
     width: 89.8%;
     background-color: white;
-    border-radius: 25px;
+    border-radius: 20px;
+    border: 1px solid #2748A9;
+    background-image: linear-gradient(130deg,#26274A, #1D337D);
     margin-top: 30px; 
+}
+.sidebar-recomends-header{
+    color: white;
+    padding:20px;
+    font-size: 20px;
+    width: 100%
+}
+.sidebar-recomends-posts{
+    color: #BEDBFF;
+    font-size:8px ;
+    margin-top: 35px;
+    
+}
+.sidebar-recomends-posts p {
+    color:#488DE3;
+    font-size:12px;
+    
+}
+
+.sidebar-recomends-posts h1 {
+    margin-top: 15px;
+    
 }
