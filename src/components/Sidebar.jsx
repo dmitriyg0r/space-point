@@ -53,6 +53,22 @@ function Sidebar() {
             <icons.Search className='sidebar-button-ico'/>
             <p>Главная</p>
         </div>
+        <div className='sidebar-recomends'>
+            <div className='sidebar-recomends-header'>
+                <h1>Популярные Темы</h1>
+                <div className='sidebar-recomends-posts'>
+                    <h1>#Марсианская миссия</h1>
+                    <p>1.2k постов</p>
+                    <h1>#Звездные карты</h1>
+                    <p>892 постов</p>
+                    <h1>#Космические открытия</h1>
+                    <p>645 постов</p>
+                    <h1>#Орбитальные станции</h1>
+                    <p>423 постов</p>
+                </div>
+            </div>
+            
+        </div>
       </div>
     </>
   )
