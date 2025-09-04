@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import './App.css'
+import Sidebar from './components/Sidebar'
 
 function App() {
 
 
   return (
     <>
-      <div className='sidebar'>тест</div>
+      <Sidebar />
     </>
   )
 }
