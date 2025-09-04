@@ -1,7 +1,38 @@
 
 
 .sidebar{
-  background-color: aqua;
+  display: flex;
+  background-color: indigo;
   width: 320px;
   height: 910px;
+  margin: 0;
+  justify-content: center;
+}
+
+
+.sidebar-header{
+    width: 89.8%;
+    height: 64px;
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 0 0px;
+    align-items: center;
+}
+
+.sidebar-logo{
+    align-items: center;
+    height: 50px;
+    width: 50px;
+    background-color: aqua;
+    border-radius: 40px;
+}
+
+.sidebar-logotext h1{
+    color: aliceblue;
+    font-size: 20px;
+}
+
+.sidebar-logotext p{
+    color: rgb(251, 148, 255);
+    font-size: 13px;
 }
