@@ -21,6 +21,38 @@ function Sidebar() {
           <icons.Search className='search-ico'/>
           <textarea placeholder='Поиск по галактике...'></textarea>
         </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
+        <div className='sidebar-button'>
+            <icons.Search className='sidebar-button-ico'/>
+            <p>Главная</p>
+        </div>
       </div>
     </>
   )

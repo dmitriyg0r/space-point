@@ -3,7 +3,7 @@
 .sidebar{
   display: flex;
   flex-direction: column;
-  background-color: rgb(51, 0, 87);
+  background-image: linear-gradient(#0F172B, #581789, #0F172B);
   width: 320px;
   height: 910px;
   margin: 0;
@@ -49,6 +49,7 @@
     border-radius: 3.40282e38px;
     border: 1px solid #4A2C79;
     gap: 10px;
+    margin-bottom: 15px;
 }
 .sidebar-search:focus-within{
     -webkit-tap-highlight-color: transparent; /* для мобильных */
@@ -80,3 +81,30 @@
      
 }
 
+.sidebar-button{
+    display: flex;
+    align-items: center;
+    height: 36px;
+    width: 89.8%;
+    gap: 20px;
+    margin-top: 5px;
+    cursor: pointer;
+    border-radius: 3.40282e38px;
+}
+
+.sidebar-button:hover{
+    background-color: rgba(129, 45, 207, 0.25);
+    transition: 0.2s;
+}
+
+.sidebar-button-ico{
+    width: 20px;
+    height: 20px;
+    color: aliceblue;
+    margin-left: 10px;
+}
+
+.sidebar-button p{
+    color: azure;
+    font-size: 15px;
+}
