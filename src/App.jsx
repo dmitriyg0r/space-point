@@ -8,9 +8,9 @@ function App() {
 
   return (
     <>
-    <body>
+    <div>
       <Sidebar />
-    </body>
+    </div>
     </>
   )
 }
