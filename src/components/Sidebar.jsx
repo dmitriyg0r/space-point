@@ -23,36 +23,36 @@ function Sidebar() {
           <textarea placeholder='Поиск по галактике...'></textarea>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Profile className='sidebar-button-ico'/>
+            <p>Профиль</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Chat className='sidebar-button-ico'/>
+            <p>Сообщения</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Pencil className='sidebar-button-ico'/>
+            <p>Закладки</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Update className='sidebar-button-ico'/>
+            <p>Планеты</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Settings className='sidebar-button-ico'/>
+            <p>Иследования</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Settings className='sidebar-button-ico'/>
+            <p>Экипаж</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Settings className='sidebar-button-ico'/>
+            <p>Станции</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Search className='sidebar-button-ico'/>
-            <p>Главная</p>
+            <icons.Settings className='sidebar-button-ico'/>
+            <p>Настройки</p>
         </div>
         <div className='sidebar-recomends'>
             <div className='sidebar-recomends-header'>
