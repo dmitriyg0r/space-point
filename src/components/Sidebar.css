@@ -2,11 +2,13 @@
 
 .sidebar{
   display: flex;
+  flex-direction: column;
   background-color: indigo;
   width: 320px;
   height: 910px;
   margin: 0;
   justify-content: center;
+  top: 0;
 }
 
 
@@ -35,4 +37,8 @@
 .sidebar-logotext p{
     color: rgb(251, 148, 255);
     font-size: 13px;
+}
+
+.sidebar-search{
+    display: flex;
 }

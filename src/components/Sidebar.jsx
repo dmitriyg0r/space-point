@@ -16,6 +16,7 @@ function Sidebar() {
                 <p>Космическая сеть</p>
             </div>
         </div>
+        <div className='sidebar-search'>Поиск по галактике...</div>
       </div>
     </>
   )
