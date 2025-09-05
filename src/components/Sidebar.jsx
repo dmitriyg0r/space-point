@@ -35,11 +35,11 @@ function Sidebar() {
             <p>Закладки</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Update className='sidebar-button-ico'/>
+            <icons.Planet className='sidebar-button-ico'/>
             <p>Планеты</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Settings className='sidebar-button-ico'/>
+            <icons.Telescope className='sidebar-button-ico'/>
             <p>Иследования</p>
         </div>
         <div className='sidebar-button'>
@@ -47,7 +47,7 @@ function Sidebar() {
             <p>Экипаж</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Settings className='sidebar-button-ico'/>
+            <icons.Station className='sidebar-button-ico'/>
             <p>Станции</p>
         </div>
         <div className='sidebar-button'>
