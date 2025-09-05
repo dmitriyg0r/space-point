@@ -3,3 +3,18 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+:root{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background-image: linear-gradient(to top left, #1E1A3D, #59168B, #12182F);    
+}
+
+body{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    top: 0;
+}

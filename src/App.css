@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body{
-    background-image: linear-gradient(to top left, #1E1A3D, #59168B, #12182F);
-    width: 100%;
-    height: 100vh;
-}
+
 
 /* Для всех параграфов и текстовых элементов */
 p, span, div, textarea, input, button, li {
@@ -15,4 +11,12 @@ p, span, div, textarea, input, button, li {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Jura', sans-serif;
   /* Ваши существующие стили для Jura */
+}
+
+.Profile-page{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }

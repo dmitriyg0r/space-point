@@ -9,12 +9,10 @@ function App() {
 
 
   return (
-    <>
-    <div>
+    <div className='Profile-page'>
       <Sidebar />
       <UserProfile />
     </div>
-    </>
   )
 }
 
