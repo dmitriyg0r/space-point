@@ -14,6 +14,10 @@ function UserProfile() {
         <div className='Profile-avatar'>
 
         </div>
+        <div className='Profile-info-text'>
+          <h1>Kamen Braguca</h1>
+          <p>kamen.braguca@gmail.com</p>
+        </div>
 
       </div>
 

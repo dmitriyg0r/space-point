@@ -38,8 +38,14 @@
     align-items: center;
     height: 50px;
     width: 50px;
-    background-color: aqua;
-    border-radius: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar-logo img{
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
 }
 
 .sidebar-logotext h1{

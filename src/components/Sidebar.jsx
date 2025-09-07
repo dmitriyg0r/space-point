@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './Sidebar.css'
+import logoImage from '../assets/logo.png'
 
 function Sidebar() {
 
@@ -10,7 +11,7 @@ function Sidebar() {
       <div className='sidebar'>
         <div className='sidebar-header'>
             <div className='sidebar-logo'>
-                <img src="" alt="" />
+                <img src={logoImage} alt="logo" />
             </div>
             <div className='sidebar-logotext'>
                 <h1>Space-Point</h1>
