@@ -25,7 +25,7 @@
   -ms-overflow-style: none;
 }
 
-/* Скрываем ползунок скролла для WebKit браузеров (Chrome, Safari, Edge) */
+/* ползунок скролла для WebKit браузеров (Chrome, Safari, Edge) */
 .sidebar-content::-webkit-scrollbar {
   display: none;
 }
