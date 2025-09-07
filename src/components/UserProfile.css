@@ -5,6 +5,8 @@
     height: 560px;
     margin-left: 35%;
     margin-top: 50px;
+    max-height: calc(100vh - 100px); /* Ограничиваем максимальную высоту */
+    overflow: hidden; 
 }
 
 .Profile-background{
