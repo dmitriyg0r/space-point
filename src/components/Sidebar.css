@@ -13,6 +13,12 @@
   box-shadow: 10px 0px 50px #0F172B;
 }
 
+
+.sidebar.collapsed{
+  width: 72px;
+  align-items: center;
+}
+
 .sidebar-content{
   width: 100%;
   flex: 1; /* Занимает всё доступное пространство */
@@ -32,7 +38,6 @@
 
 
 .sidebar-header{
-    width: 89.8%;
     height: 64px;
     display: flex;
     gap: 10px;
@@ -41,12 +46,48 @@
     flex-shrink: 0; /* Важно! */
 }
 
+.sidebar.collapsed .sidebar-header{
+    gap: 0px;
+}
+
+.sidebar.collapsed .sidebar-header{
+  width: 100%;
+  justify-content: center;
+}
+
+.switch-size {
+    margin-left: 80px;
+}
+.sidebar.collapsed .switch-size{
+    margin: 0 -20px 0 0;
+}
+
+.switch-button {
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    border: 1px solid #2748A9;
+    background-image: linear-gradient(130deg,#26274A, #1D337D);
+    transition: all 0.2s ease;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
 .sidebar-logo{
     align-items: center;
     height: 50px;
     width: 50px;
     display: flex;
     justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    height: 50px;
+    width: 50px;
+    gap: 0px;
 }
 
 .sidebar-logo img{
@@ -58,6 +99,10 @@
 .sidebar-logotext h1{
     color: aliceblue;
     font-size: 20px;
+}
+
+.sidebar.collapsed .sidebar-logotext{
+  display: none;
 }
 
 .sidebar-logotext p{
@@ -77,6 +122,13 @@
     border: 1px solid #4A2C79;
     gap: 10px;
     margin-bottom: 15px;
+}
+.sidebar.collapsed .sidebar-search textarea{
+  display: none;
+}
+.sidebar.collapsed .sidebar-search{
+  width: 50px;
+  justify-content: center;
 }
 .sidebar-search:focus-within{
     -webkit-tap-highlight-color: transparent; /* для мобильных */
@@ -108,6 +160,10 @@
      
 }
 
+.sidebar.collapsed .search-ico {
+    margin-left: 0;
+}
+
 .sidebar-button{
     flex-shrink: 0 !important;
     display: flex;
@@ -118,6 +174,10 @@
     margin-top: 5px;
     cursor: pointer;
     border-radius: 3.40282e38px;
+}
+.sidebar.collapsed .sidebar-button{
+  width: 50px;
+  justify-content: center;
 }
 
 .sidebar-button:hover{
@@ -132,9 +192,16 @@
     margin-left: 10px;
 }
 
+.sidebar.collapsed .sidebar-button-ico {
+    margin-left: 0px;
+}
+
 .sidebar-button p{
     color: white;
     font-size: 15px;
+}
+.sidebar.collapsed .sidebar-button p{
+  display: none;
 }
 .star{
     width: 20px;
@@ -152,6 +219,9 @@
     background-image: linear-gradient(130deg,#26274A, #1D337D);
     margin-top: 30px; 
     padding-left: 20px;
+}
+.sidebar.collapsed .sidebar-recomends{
+  display: none;
 }
 .sidebar-recomends-header{
     display: flex;
@@ -194,6 +264,12 @@
     margin-top: 15px;
     cursor: pointer;
     border-radius: 3.40282e38px;
+}
+.sidebar.collapsed .sidebar-research{
+  width: 50px;
+}
+.sidebar.collapsed .sidebar-research p{
+  display: none;
 }
 
 .sidebar-research:hover{
