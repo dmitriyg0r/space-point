@@ -21,7 +21,7 @@ const Sidebar = () => {
                 <p>Космическая сеть</p>
             </div>
             <div className='switch-size'>
-                <button className='switch-button' onClick={toggleSidebar}>{isCollapsed ? '→' : '←'}</button>
+                <button className='switch-button' onClick={toggleSidebar}>{isCollapsed ? '>' : '<'}</button>
             </div>
         </div>
         <div className='sidebar-content'>

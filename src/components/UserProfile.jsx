@@ -11,12 +11,21 @@ function UserProfile() {
 
       </div>
       <div className='Profile-info'>
-        <div className='Profile-avatar'>
+        <div className='Profile-main-content'>
+          <div className='Profile-avatar'>
 
+          </div>
+          <div className='Profile-info-text'>
+            <h1>Kamen Braguca</h1>
+            <p>kamen.braguca@gmail.com</p>
+          </div>
         </div>
-        <div className='Profile-info-text'>
-          <h1>Kamen Braguca</h1>
-          <p>kamen.braguca@gmail.com</p>
+          <div className='Profile-settings-menu'>
+           <div className='settings-list'>
+            <div className='settings-list-item'>Настройки профиля</div>
+            <div className='settings-list-item'>Оформление</div>
+            <div className='settings-list-item'>Язык</div> 
+          </div>
         </div>
 
       </div>
