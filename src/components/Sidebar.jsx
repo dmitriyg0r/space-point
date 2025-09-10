@@ -3,12 +3,15 @@ import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './Sidebar.css'
 import logoImage from '../assets/logo.png'
 
-function Sidebar() {
-
+const Sidebar = () => {
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const toggleSidebar = () => {
+        setIsCollapsed(!isCollapsed);
+      };
 
   return (
     <>
-      <div className='sidebar'>
+      <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <div className='sidebar-header'>
             <div className='sidebar-logo'>
                 <img src={logoImage} alt="logo" />
@@ -16,6 +19,9 @@ function Sidebar() {
             <div className='sidebar-logotext'>
                 <h1>Space-Point</h1>
                 <p>Космическая сеть</p>
+            </div>
+            <div className='switch-size'>
+                <button className='switch-button' onClick={toggleSidebar}>{isCollapsed ? '→' : '←'}</button>
             </div>
         </div>
         <div className='sidebar-content'>
