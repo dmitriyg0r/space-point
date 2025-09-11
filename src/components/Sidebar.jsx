@@ -50,7 +50,7 @@ const Sidebar = () => {
             <p>Иследования</p>
         </div>
         <div className='sidebar-button'>
-            <icons.Settings className='sidebar-button-ico'/>
+            <icons.Crew className='sidebar-button-ico'/>
             <p>Экипаж</p>
         </div>
         <div className='sidebar-button'>
