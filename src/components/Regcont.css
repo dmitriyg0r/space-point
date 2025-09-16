@@ -1,0 +1,35 @@
+.Profile-box {
+    width: 350px;
+    height: 350px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10% auto;
+    border: 2px solid #2748A9;
+    background-image: linear-gradient(130deg, #26274A, #1D337D);
+}
+
+.login-input {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 300px;
+    height: 100px;
+
+}
+
+.login-input textarea {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #4A2C79;
+    text-align: left;
+    outline: none;
+    border-radius: 3.40282e38px;
+    background-color: #212241;
+    color: #C27AFF;
+    font-size: 15px;
+    resize: none;
+    padding: 10px 15px;
+    box-sizing: border-box;
+}
