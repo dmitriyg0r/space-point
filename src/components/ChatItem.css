@@ -1,21 +1,114 @@
-.chat-item{
+.chat-item {
     height: 82px;
     width: 304px;
     display: flex;
     border-radius: 15px;
-    background-color: aqua;
-    margin-bottom: 20px;
+    background-image: linear-gradient(#28204A, #3D1B68);
+    margin-top: 25px;
+    color: aliceblue;
+    transition: all 0.3s ease;
+    border: 2px solid transparent; /* Добавляем прозрачную границу для плавности */
 }
 
-.chat-item-avatar{
+.chat-item-avatar {
     display: flex;
     height: 50px;
     width: 50px;
     border-radius: 30px;
+    margin-top: 15px;
+    margin-left: 15px;
+    border: 1px solid aqua;
+    position: relative;
+    flex-shrink: 0;
 }
 
-.chat-item-avatar img{
+.chat-item-avatar img {
     height: 100%;
     width: 100%;
     border-radius: 30px;
+    object-fit: cover;
+}
+
+.chat-item-content {
+    margin-left: 10px;
+    margin-right: 15px;
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.chat-item-name {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.chat-item-time {
+    color: aqua;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.chat-item-message {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.chat-item-message p {
+    color: #aaa;
+    font-size: 13px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.chat-item-badge {
+    background-color: #c27aff;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.chat-item-online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #00ff88;
+    border-radius: 50%;
+    border: 2px solid #3D1B68;
+}
+
+/* Упрощенный стиль для выбранного элемента - только меняем границу и фон */
+.chat-item-selected {
+    border: 2px solid #16B0DF;
+    background-image: linear-gradient(#28204A, #4A2C79);
+    /* Убираем все повторяющиеся свойства (height, width, display) */
+    /* Добавляем легкое свечение для выделения */
+    box-shadow: 0 0 10px rgba(22, 176, 223, 0.3);
 }

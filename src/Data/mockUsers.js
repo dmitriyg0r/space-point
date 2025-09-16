@@ -1,7 +1,7 @@
 export const mockUsers = [
     {
         id: '1',
-        name: 'Dmitry Gor',
+        name: 'Dmitry G0r',
         avatar: 'https://i.pravatar.cc/150?img=1',
         lastMessage: 'Where are you?',
         timetamp: '20:31',
@@ -14,7 +14,7 @@ export const mockUsers = [
         avatar: 'https://i.pravatar.cc/150?img=5',
         lastMessage: 'Сосал?',
         timetamp: '13:23',
-        unreadCount: '2',
+        unreadCount: '0',
         isOnline: 'false',
     },
         {

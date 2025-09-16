@@ -14,20 +14,20 @@ const ChatList = ({ users, onUserSelect}) => {
             <div className="chat-serch">
                 <h3>QUANTUM COMM</h3>
                 <div className="chat-serch-button">
-
+                    
                 </div>
+            </div>
 
-                <div className="chat-list-items">
-                    {users.map (user => ( 
-                        <ChatItem
-                          key={user.id}
-                          user={user}
-                          isSelected={selectedUserId === user.id}
-                          onClick={() => handleUserClick(user)}
-                        />
+            <div className="chat-list-items">
+                {users.map (user => ( 
+                    <ChatItem
+                      key={user.id}
+                      user={user}
+                      timetamp={user.timetamp}
+                      isSelected={selectedUserId === user.id}
+                      onClick={() => handleUserClick(user)}
+                    />
                     ))}
-                </div>
-
             </div>
         </div>
  );
