@@ -8,6 +8,7 @@
     color: aliceblue;
     transition: all 0.3s ease;
     border: 2px solid transparent; /* Добавляем прозрачную границу для плавности */
+    cursor: pointer;
 }
 
 .chat-item-avatar {
