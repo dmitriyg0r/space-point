@@ -4,18 +4,26 @@ import '@fontsource/jura';
 import Sidebar from './components/Sidebar'
 import { Profile } from 'svg-by-dreamsoftware';
 import ChatList from "./components/ChatList";
+import { mockUsers } from './Data/mockUsers';
 
 
 
-function Chat() {
+const Chat = () => {
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    const handleUserSelect = (user) => {
+        setSelectedUser(user);
+    };
     return (
         <div className="Chat-page">
             <Sidebar/>
-            <ChatList/>
+            <ChatList users={mockUsers} onUserSelect={handleUserSelect}/>
+
         </div>
-    )
     
-}
+
+  );    
+};
 
 
 export default Chat;

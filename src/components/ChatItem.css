@@ -1,0 +1,21 @@
+.chat-item{
+    height: 82px;
+    width: 304px;
+    display: flex;
+    border-radius: 15px;
+    background-color: aqua;
+    margin-bottom: 20px;
+}
+
+.chat-item-avatar{
+    display: flex;
+    height: 50px;
+    width: 50px;
+    border-radius: 30px;
+}
+
+.chat-item-avatar img{
+    height: 100%;
+    width: 100%;
+    border-radius: 30px;
+}

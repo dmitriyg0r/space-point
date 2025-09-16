@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as icons from "svg-by-dreamsoftware/icons-react-dist";
-import './ChatItems.css'
+import './ChatItem.css'
 
 const ChatItem = ({user, onClick, isSelected}) => {
     return (
