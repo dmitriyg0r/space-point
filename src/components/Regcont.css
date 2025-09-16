@@ -1,14 +1,85 @@
+.login-logo {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.login-logo img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  display: block;
+}
+.login-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+:root {
+  --m: 4rem;
+  
+  --red: #FF6565;
+  --pink: #FF64F9;
+  --purple: #6B5FFF;
+  --blue: #4D8AFF;
+  --green: #5BFF89;
+  --yellow: #FFEE55;
+  --orange: #FF6D1B;
+  
+}
+
 .Reg-box {
-    width: 350px;
-    height: 350px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 10% auto;
-    border: 2px solid #2748A9;
-    background-image: linear-gradient(130deg, #26274A, #1D337D);
+  width: 370px;
+  min-height: 420px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 7% auto 0 auto;
+  border: none;
+  background: linear-gradient(130deg,#26274A, #1D337D);
+  box-shadow: 0 8px 32px 0 rgba(60, 40, 120, 0.18), 0 1.5px 8px 0 rgba(60, 40, 120, 0.10);
+  padding: 36px 32px 32px 32px;
+  transition: box-shadow 0.3s;
+}
+.login-logotext {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.login-logotext h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 2px 0;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(60,40,120,0.10);
+}
+
+.login-logotext p {
+  font-size: 1.05rem;
+  color: #bdbdf7;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.login-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 32px;
+  gap: 0;
 }
 
 .login-input {
@@ -20,44 +91,89 @@
 
 }
 
-.login-input textarea {
-    width: 100%;
-    height: 40px;
-    border: 1px solid #4A2C79;
-    text-align: left;
-    outline: none;
-    border-radius: 3.40282e38px;
-    background-color: #212241;
-    color: #C27AFF;
-    font-size: 15px;
-    resize: none;
-    padding: 10px 15px;
-    box-sizing: border-box;
+.login-input input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #4A2C79;
+  text-align: left;
+  outline: none;
+  border-radius: 3.40282e38px;
+  background-color: #212241;
+  color: #C27AFF;
+  font-size: 15px;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  margin-bottom: 0;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.login-input input:focus {
+  border: 1.5px solid #6B5FFF;
+  box-shadow: 0 0 0 2px rgba(107,95,255,0.15);
 }
 
 .login-btn{
-    color: rgb(255, 255, 255);
-    align-items: center;
-    justify-content: center;
-    background-image: linear-gradient(90deg, #9913F8, #BD2ABB,#E3007C);
-    display: flex;
-    align-items: center;
-    height: 36px;
-    width: 89.8%;
-    margin-top: 60px;
-    cursor: pointer;
-    border-radius: 3.40282e38px;
+  color: rgb(255, 255, 255);
+  outline: none;
+  border: none;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(90deg, #9913F8, #BD2ABB,#E3007C);
+  display: flex;
+  align-items: center;
+  height: 36px;
+  width: 89.8%;
+  margin-top: 60px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  border-radius: 3.40282e38px;
+  font-size: 16px;
 }
-.login-reg{
-    color: rgb(255, 255, 255);
-    align-items: center;
-    justify-content: center;
-    background-image: linear-gradient(90deg, #9913F8, #BD2ABB,#E3007C);
-    display: flex;
-    align-items: center;
-    height: 36px;
-    width: 89.8%;
-    margin-top: 20px;
-    cursor: pointer;
-    border-radius: 3.40282e38px;
+
+.login-reg {
+  border: calc(0.08 * var(--m)) solid transparent;
+  position: relative;
+  color: #F3F3F3;
+  font-size: 16px;
+  border-radius: calc(0.7 * var(--m));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  width: 89.8%;
+  margin-top: 0;
+  cursor: pointer;
+  background:linear-gradient(#121213, #121213), linear-gradient(#121213 50%, rgba(18, 18, 19, 0.6) 80%, rgba(18, 18, 19, 0)),  linear-gradient(90deg, var(--orange), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+  background-origin: border-box;
+  background-clip: padding-box, border-box, border-box;
+  background-size: 200%;
+  animation: animate 2s infinite linear;
+}
+
+login-reg::before {
+  content: '';
+  background: linear-gradient(90deg, var(--orange), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+  height: 30%;
+  width: 60%;
+  position: absolute;
+  bottom: -20%;
+  z-index: -5;
+  background-size: 200%;
+  animation: animate 2s infinite linear;
+  filter: blur(calc(0.8 * var(--m)));
+}
+
+login-reg:hover, login-reg:hover::before {
+  animation: animate 0.5s infinite linear;
+}
+
+@keyframes animate {
+  0% {background-position: 0}
+  100% {background-position: 200%}
+}
+
+@media screen and (max-width: 1000px) {
+  :root {
+    --m: 2rem;
+  }
 }

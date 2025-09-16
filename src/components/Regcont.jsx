@@ -1,27 +1,32 @@
-import { useState } from 'react'
-import * as icons from "svg-by-dreamsoftware/icons-react-dist";
-import './Regcont.css'
+
+import './Regcont.css';
+import logoImage from '../assets/logo.png';
+
 
 function Regcont() {
-
-
   return (
-    <div className='Regcont'>
-    <div className='Reg-box'>
-        <div className='login-input'>
-        <textarea placeholder='Введите логин...'></textarea>
-        <textarea placeholder='Введите пароль...'></textarea>
+    <div className="Regcont">
+      <div className="Reg-box">
+        <div className="login-header">
+          <div className="login-logo">
+            <img src={logoImage} alt="logo" />
+          </div>
+          <div className="login-logotext">
+            <h1>Space-Point</h1>
+            <p>Космическая сеть</p>
+          </div>
         </div>
-        <div className='login-btn'>
-            <div>Войти</div>
+        <div className="login-content">
+          <div className="login-input">
+            <input type="text" placeholder="Введите логин..." />
+            <input type="password" placeholder="Введите пароль..." />
+          </div>
+          <button className="login-btn">Войти</button>
+          <button className="login-reg">Регистрация</button>
         </div>
-        <div className='login-reg'>
-          <div>Регистрация</div>
-        </div>
+      </div>
     </div>
-    </div>
-
-  )
+  );
 }
 
 export default Regcont;
