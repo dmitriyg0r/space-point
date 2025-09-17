@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import { Profile } from 'svg-by-dreamsoftware';
 import ChatList from "./components/ChatList";
 import { mockUsers } from './Data/mockUsers';
+import ChatWindow from "./components/ChatWindow";
 
 
 
@@ -18,7 +19,13 @@ const Chat = () => {
         <div className="Chat-page">
             <Sidebar/>
             <ChatList users={mockUsers} onUserSelect={handleUserSelect}/>
-
+            {selectedUser ? (
+                <ChatWindow user={selectedUser}/>
+            ) : (
+                <div className="chat-page-placeholder">
+                    <h3>Выберите чат чтобы начать общение</h3>
+                </div>
+            )}
         </div>
     
 
