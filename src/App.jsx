@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import '@fontsource/jura';
 import './App.css'
 import Sidebar from './components/Sidebar'
 import UserProfile from './components/UserProfile';
 import Regcont from './components/Regcont';
 import Starfield from './components/Starfield'; // Импортируем компонент звезд
+import Chat from './Chat';
 
 // Глобальная функция для входа (временное решение)
 window.handleGlobalLogin = null;
@@ -71,7 +73,12 @@ function App() {
       <Starfield />
       <div className='Profile-page' style={{ position: 'relative', zIndex: 1 }}>
         <Sidebar currentUser={currentUser} onLogout={handleLogout} />
-        <UserProfile currentUser={currentUser} />
+        <Routes>
+          <Route path="/" element={<UserProfile currentUser={currentUser} />} />
+          <Route path="/profile" element={<UserProfile currentUser={currentUser} />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
   )

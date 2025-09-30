@@ -185,6 +185,15 @@
     transition: 0.2s;
 }
 
+.sidebar-button.active{
+    background-color: rgba(129, 45, 207, 0.4);
+    border: 1px solid rgba(194, 122, 255, 0.3);
+}
+
+.sidebar-button.active:hover{
+    background-color: rgba(129, 45, 207, 0.5);
+}
+
 .sidebar-button-ico{
     width: 20px;
     height: 20px;

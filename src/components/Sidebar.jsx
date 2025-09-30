@@ -1,13 +1,21 @@
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './Sidebar.css'
 import logoImage from '../assets/logo.png'
 
 const Sidebar = ({ currentUser, onLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+    
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed);
-      };
+    };
+
+    const handleNavigation = (path) => {
+        navigate(path);
+    };
 
   return (
     <>
@@ -29,11 +37,11 @@ const Sidebar = ({ currentUser, onLogout }) => {
           <icons.Search className='search-ico'/>
           <textarea placeholder='Поиск по галактике...'></textarea>
         </div>
-        <div className='sidebar-button'>
+        <div className={`sidebar-button ${location.pathname === '/profile' || location.pathname === '/' ? 'active' : ''}`} onClick={() => handleNavigation('/profile')}>
             <icons.Profile className='sidebar-button-ico'/>
             <p>Профиль</p>
         </div>
-        <div className='sidebar-button'>
+        <div className={`sidebar-button ${location.pathname === '/chat' ? 'active' : ''}`} onClick={() => handleNavigation('/chat')}>
             <icons.Chat className='sidebar-button-ico'/>
             <p>Сообщения</p>
         </div>
