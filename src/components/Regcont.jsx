@@ -1,14 +1,23 @@
 import './Regcont.css';
 import logoImage from '../assets/logo.png';
 import { useState } from 'react';
+import axios from 'axios';
+
+// Конфигурация API
+const API_BASE_URL = 'http://localhost:3001/api';
 
 function Regcont() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
   const [loginData, setLoginData] = useState({
     login: '',
     password: '',
   });
   const [registerData, setRegisterData] = useState({
+    name: '',
     login: '',
     email: '',
     password: '',
@@ -21,8 +30,11 @@ function Regcont() {
 
   const handleCloseModal = () => {
     setIsRegisterModalOpen(false);
+    setError('');
+    setSuccess('');
     // Очищаем форму при закрытии
     setRegisterData({
+      name: '',
       login: '',
       email: '',
       password: '',
@@ -69,39 +81,74 @@ function Regcont() {
     }));
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     
     // Проверка совпадения паролей
     if (registerData.password !== registerData.confirmPassword) {
-      alert('Пароли не совпадают!');
+      setError('Пароли не совпадают!');
       return;
     }
 
     // Проверка заполненности полей
-    if (!registerData.login || !registerData.email || !registerData.password) {
-      alert('Пожалуйста, заполните все поля!');
+    if (!registerData.name || !registerData.login || !registerData.email || !registerData.password) {
+      setError('Пожалуйста, заполните все поля!');
+      return;
+    }
+
+    // Проверка длины пароля
+    if (registerData.password.length < 6) {
+      setError('Пароль должен содержать минимум 6 символов');
       return;
     }
     
-    // Детальный лог регистрации
-    console.group('🚀 РЕГИСТРАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ');
-    console.log('📅 Время регистрации:', new Date().toLocaleString('ru-RU'));
-    console.log('👤 Логин:', registerData.login);
-    console.log('📧 Email:', registerData.email);
-    console.log('🔐 Пароль установлен:', registerData.password ? 'Да' : 'Нет');
-    console.log('✅ Статус:', 'Успешно зарегистрирован');
-    console.log('🎯 Данные для отправки на сервер:', {
-      login: registerData.login,
-      email: registerData.email,
-      password: '***скрыто***',
-      timestamp: Date.now()
-    });
-    console.log('🎉 Добро пожаловать,', registerData.login + '! Регистрация прошла успешно.');
-    console.groupEnd();
+    setIsLoading(true);
     
-    // Закрываем модальное окно после успешной регистрации
-    handleCloseModal();
+    try {
+      // Отправляем данные на сервер
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+        name: registerData.name,
+        username: registerData.login,
+        email: registerData.email,
+        password: registerData.password,
+        user_avatar: `https://i.pravatar.cc/150?u=${registerData.login}`, // Генерируем аватар
+        profile_info: `Пользователь ${registerData.name}`
+      });
+
+      if (response.data.success) {
+        setSuccess('Регистрация прошла успешно! Теперь вы можете войти в систему.');
+        
+        // Детальный лог регистрации
+        console.group('🚀 РЕГИСТРАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ');
+        console.log('📅 Время регистрации:', new Date().toLocaleString('ru-RU'));
+        console.log('👤 Имя:', registerData.name);
+        console.log('👤 Логин:', registerData.login);
+        console.log('📧 Email:', registerData.email);
+        console.log('✅ Статус:', 'Успешно зарегистрирован');
+        console.log('🆔 ID пользователя:', response.data.user.id);
+        console.log('🎉 Добро пожаловать,', registerData.name + '!');
+        console.groupEnd();
+        
+        // Закрываем модальное окно через 2 секунды
+        setTimeout(() => {
+          handleCloseModal();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Ошибка регистрации:', error);
+      
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.code === 'ECONNREFUSED') {
+        setError('Не удается подключиться к серверу. Проверьте, что сервер запущен.');
+      } else {
+        setError('Произошла ошибка при регистрации. Попробуйте еще раз.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -155,6 +202,28 @@ function Regcont() {
               </button>
             </div>
             <form className="register-form" onSubmit={handleRegisterSubmit}>
+              {error && (
+                <div className="error-message">
+                  ❌ {error}
+                </div>
+              )}
+              {success && (
+                <div className="success-message">
+                  ✅ {success}
+                </div>
+              )}
+              
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Введите ваше имя..."
+                  value={registerData.name}
+                  onChange={handleRegisterInputChange}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
               <div className="form-group">
                 <input
                   type="text"
@@ -162,6 +231,7 @@ function Regcont() {
                   placeholder="Придумайте логин..."
                   value={registerData.login}
                   onChange={handleRegisterInputChange}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -172,6 +242,7 @@ function Regcont() {
                   placeholder="Введите email..."
                   value={registerData.email}
                   onChange={handleRegisterInputChange}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -179,9 +250,10 @@ function Regcont() {
                 <input
                   type="password"
                   name="password"
-                  placeholder="Придумайте пароль..."
+                  placeholder="Придумайте пароль (минимум 6 символов)..."
                   value={registerData.password}
                   onChange={handleRegisterInputChange}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -192,11 +264,16 @@ function Regcont() {
                   placeholder="Повторите пароль..."
                   value={registerData.confirmPassword}
                   onChange={handleRegisterInputChange}
+                  disabled={isLoading}
                   required
                 />
               </div>
-              <button type="submit" className="register-submit-btn">
-                Зарегистрироваться
+              <button 
+                type="submit" 
+                className="register-submit-btn"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
               </button>
             </form>
           </div>
