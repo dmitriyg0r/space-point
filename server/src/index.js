@@ -20,6 +20,9 @@ app.use(cors());
 app.use(express.json());
 
 // Исправлено: добавлен слэш в начале пути
+app.get('/api/login/users', (req, res) => {
+
+});
 app.get('/api/chat/users', (req, res) => {
     res.json({
         success: true,

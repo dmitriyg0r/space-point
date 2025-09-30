@@ -3,7 +3,13 @@ import './Regcont.css';
 import logoImage from '../assets/logo.png';
 
 
-function Regcont() {
+const Login = () => {
+  const [userLogin, setUserLogin] = useState([]);
+  const [userPasword, setUserPasword] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+
   return (
     <div className="Regcont">
       <div className="Reg-box">
@@ -27,6 +33,6 @@ function Regcont() {
       </div>
     </div>
   );
-}
+};
 
 export default Regcont;
