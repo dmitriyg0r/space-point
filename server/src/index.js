@@ -33,7 +33,20 @@ const PORT = process.env.PORT || 3001;
 
 console.log('🌐 Express приложение создано');
 
-app.use(cors());
+// Настройка CORS для разрешения запросов с фронтенда
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'], // Vite dev server
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Логирование всех запросов для отладки
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+    next();
+});
+
 app.use(express.json());
 
 console.log('🔧 Middleware настроен');
@@ -47,15 +60,71 @@ app.get('/api/test', (req, res) => {
     });
 });
 
+// Функция для транслитерации русского текста в английский
+function transliterate(text) {
+    const translitMap = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+        'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+        'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
+        'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo',
+        'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+        'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+        'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch',
+        'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+        ' ': '_', '-': '_'
+    };
+    
+    return text.split('').map(char => translitMap[char] || char).join('');
+}
+
+// Функция для генерации уникального username
+function generateUsername(name) {
+    // Транслитерируем имя
+    let username = transliterate(name.toLowerCase());
+    
+    // Убираем все символы кроме букв, цифр и подчеркиваний
+    username = username.replace(/[^a-zA-Z0-9_]/g, '');
+    
+    // Если username пустой после очистки, используем default
+    if (!username) {
+        username = 'user';
+    }
+    
+    // Добавляем 5 случайных цифр
+    const randomNumbers = Math.floor(10000 + Math.random() * 90000);
+    username += randomNumbers;
+    
+    return username;
+}
+
 // Регистрация нового пользователя
 app.post('/api/auth/register', async (req, res) => {
-    const { name, username, email, password, user_avatar, profile_info } = req.body;
+    const { name, login, email, password, user_avatar, profile_info } = req.body;
     
     // Валидация обязательных полей
-    if (!name || !username || !email || !password) {
+    if (!name || !login || !email || !password) {
         return res.status(400).json({
             success: false,
-            message: 'Имя, username, email и пароль обязательны'
+            message: 'Имя, логин, email и пароль обязательны'
+        });
+    }
+
+    // Валидация логина (только английские буквы, цифры и подчеркивания)
+    const loginRegex = /^[a-zA-Z0-9_]+$/;
+    if (!loginRegex.test(login)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Логин должен содержать только английские буквы, цифры и подчеркивания'
+        });
+    }
+
+    // Валидация длины логина
+    if (login.length < 3 || login.length > 20) {
+        return res.status(400).json({
+            success: false,
+            message: 'Логин должен содержать от 3 до 20 символов'
         });
     }
 
@@ -84,16 +153,36 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
 
-        // Проверяем, существует ли пользователь с таким username или email
+        // Генерируем уникальный username из имени
+        let username = generateUsername(name);
+        
+        // Проверяем уникальность username и генерируем новый если нужно
+        let usernameExists = true;
+        let attempts = 0;
+        while (usernameExists && attempts < 10) {
+            const existingUsername = await global.pool.query(`
+                SELECT id FROM users WHERE username = $1
+            `, [username]);
+            
+            if (existingUsername.rows.length === 0) {
+                usernameExists = false;
+            } else {
+                // Генерируем новый username
+                username = generateUsername(name);
+                attempts++;
+            }
+        }
+
+        // Проверяем, существует ли пользователь с таким логином или email
         const existingUser = await global.pool.query(`
             SELECT id FROM users 
-            WHERE username = $1 OR email = $2
-        `, [username, email]);
+            WHERE email = $1
+        `, [email]);
 
         if (existingUser.rows.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: 'Пользователь с таким username или email уже существует'
+                message: 'Пользователь с таким email уже существует'
             });
         }
 
@@ -126,6 +215,7 @@ app.post('/api/auth/register', async (req, res) => {
                 id: newUser.id,
                 name: newUser.name,
                 username: newUser.username,
+                login: login, // Возвращаем введенный логин для отображения
                 email: newUser.email,
                 user_avatar: newUser.user_avatar,
                 profile_info: newUser.profile_info,
@@ -140,7 +230,7 @@ app.post('/api/auth/register', async (req, res) => {
         if (error.code === '23505') { // Unique violation
             return res.status(409).json({
                 success: false,
-                message: 'Пользователь с таким username или email уже существует'
+                message: 'Пользователь с таким email уже существует'
             });
         }
         

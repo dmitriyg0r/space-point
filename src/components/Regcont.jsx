@@ -98,6 +98,19 @@ function Regcont() {
       return;
     }
 
+    // Валидация логина (только английские буквы, цифры и подчеркивания)
+    const loginRegex = /^[a-zA-Z0-9_]+$/;
+    if (!loginRegex.test(registerData.login)) {
+      setError('Логин должен содержать только английские буквы, цифры и подчеркивания');
+      return;
+    }
+
+    // Валидация длины логина
+    if (registerData.login.length < 3 || registerData.login.length > 20) {
+      setError('Логин должен содержать от 3 до 20 символов');
+      return;
+    }
+
     // Проверка длины пароля
     if (registerData.password.length < 6) {
       setError('Пароль должен содержать минимум 6 символов');
@@ -110,7 +123,7 @@ function Regcont() {
       // Отправляем данные на сервер
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name: registerData.name,
-        username: registerData.login,
+        login: registerData.login,
         email: registerData.email,
         password: registerData.password,
         user_avatar: `https://i.pravatar.cc/150?u=${registerData.login}`, // Генерируем аватар
@@ -125,6 +138,7 @@ function Regcont() {
         console.log('📅 Время регистрации:', new Date().toLocaleString('ru-RU'));
         console.log('👤 Имя:', registerData.name);
         console.log('👤 Логин:', registerData.login);
+        console.log('👤 Username (сгенерирован):', response.data.user.username);
         console.log('📧 Email:', registerData.email);
         console.log('✅ Статус:', 'Успешно зарегистрирован');
         console.log('🆔 ID пользователя:', response.data.user.id);
@@ -228,7 +242,7 @@ function Regcont() {
                 <input
                   type="text"
                   name="login"
-                  placeholder="Придумайте логин..."
+                  placeholder="Придумайте логин (только английские буквы)..."
                   value={registerData.login}
                   onChange={handleRegisterInputChange}
                   disabled={isLoading}
