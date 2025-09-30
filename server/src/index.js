@@ -33,46 +33,29 @@ const PORT = process.env.PORT || 3001;
 
 console.log('🌐 Express приложение создано');
 
-// Настройка CORS для разрешения запросов с фронтенда
+// Настройка CORS для конкретного фронтенда
 app.use(cors({
-    origin: function (origin, callback) {
-        // Разрешаем запросы без origin (например, мобильные приложения)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = [
-            'http://localhost:5173',
-            'http://localhost:3000', 
-            'http://127.0.0.1:5173',
-            'http://localhost:5174' // На случай если Vite запустится на другом порту
-        ];
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('CORS blocked origin:', origin);
-            callback(null, true); // Временно разрешаем все для отладки
-        }
-    },
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     preflightContinue: false,
     optionsSuccessStatus: 200
 }));
 
-// Дополнительные CORS заголовки
+// Дополнительные CORS заголовки - временно разрешаем все
 app.use((req, res, next) => {
     const origin = req.get('Origin');
-    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Origin', origin || 'http://localhost:5173');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
+
     if (req.method === 'OPTIONS') {
         console.log(`OPTIONS preflight request from ${origin} to ${req.path}`);
         return res.sendStatus(200);
     }
-    
+
     next();
 });
 
