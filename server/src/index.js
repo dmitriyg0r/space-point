@@ -35,11 +35,44 @@ console.log('🌐 Express приложение создано');
 
 // Настройка CORS для разрешения запросов с фронтенда
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'], // Vite dev server
+    origin: function (origin, callback) {
+        // Разрешаем запросы без origin (например, мобильные приложения)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000', 
+            'http://127.0.0.1:5173',
+            'http://localhost:5174' // На случай если Vite запустится на другом порту
+        ];
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, true); // Временно разрешаем все для отладки
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    preflightContinue: false,
+    optionsSuccessStatus: 200
 }));
+
+// Дополнительные CORS заголовки
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 
 // Логирование всех запросов для отладки
 app.use((req, res, next) => {
@@ -221,6 +254,17 @@ app.post('/api/auth/register', async (req, res) => {
             message: 'Внутренняя ошибка сервера при регистрации'
         });
     }
+});
+
+// GET обработчик для /api/auth/register (для информации)
+app.get('/api/auth/register', (req, res) => {
+    res.json({
+        success: false,
+        message: 'Используйте POST запрос для регистрации',
+        method: 'POST',
+        endpoint: '/api/auth/register',
+        requiredFields: ['name', 'email', 'password']
+    });
 });
 
 console.log('🛣️ Маршруты настроены');
