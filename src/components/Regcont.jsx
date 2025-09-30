@@ -6,7 +6,11 @@ import axios from 'axios';
 // Конфигурация API
 const API_BASE_URL = 'http://localhost:3001/api';
 
-function Regcont() {
+function Regcont(props) {
+  console.log('Regcont получил props:', props);
+  const { onLogin } = props;
+  console.log('Regcont получил onLogin:', typeof onLogin, onLogin);
+  
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -48,27 +52,72 @@ function Regcont() {
     }));
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
     if (!loginData.login || !loginData.password) {
-      alert('Пожалуйста, заполните все поля!');
+      setError('Пожалуйста, заполните все поля!');
       return;
     }
 
-    // Детальный лог входа
-    console.group('🔐 ВХОД В СИСТЕМУ');
-    console.log('📅 Время входа:', new Date().toLocaleString('ru-RU'));
-    console.log('👤 Логин:', loginData.login);
-    console.log('🔐 Пароль введен:', loginData.password ? 'Да' : 'Нет');
-    console.log('✅ Статус:', 'Успешный вход');
-    console.log('🎯 Данные для проверки:', {
-      login: loginData.login,
-      password: '***скрыто***',
-      timestamp: Date.now()
-    });
-    console.log('👋 Успешный вход,', loginData.login + '!');
-    console.groupEnd();
+    setIsLoading(true);
+
+    try {
+      // Отправляем запрос на вход
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        login: loginData.login,
+        password: loginData.password
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000
+      });
+
+      if (response.data.success) {
+        // Детальный лог входа
+        console.group('🔐 ВХОД В СИСТЕМУ');
+        console.log('📅 Время входа:', new Date().toLocaleString('ru-RU'));
+        console.log('👤 Пользователь:', response.data.user.name);
+        console.log('✅ Статус:', 'Успешный вход');
+        console.log('👋 Добро пожаловать,', response.data.user.name + '!');
+        console.groupEnd();
+
+        // Вызываем функцию входа из родительского компонента
+        console.log('🔍 Проверяем функции входа...');
+        console.log('onLogin type:', typeof onLogin);
+        console.log('window.handleGlobalLogin type:', typeof window.handleGlobalLogin);
+        
+        if (typeof onLogin === 'function') {
+          console.log('✅ Используем onLogin из пропсов');
+          onLogin(response.data.user);
+        } else if (typeof window.handleGlobalLogin === 'function') {
+          console.log('✅ Используем глобальную функцию входа');
+          window.handleGlobalLogin(response.data.user);
+        } else {
+          console.error('❌ Ни одна функция входа не доступна');
+          console.error('onLogin:', onLogin);
+          console.error('Все пропсы:', props);
+          // Временное решение - сохраняем пользователя в localStorage и перезагружаем страницу
+          console.log('🔄 Перезагружаем страницу...');
+          localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка входа:', error);
+      
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.code === 'ECONNREFUSED') {
+        setError('Не удается подключиться к серверу. Проверьте, что сервер запущен.');
+      } else {
+        setError('Неверный логин или пароль.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegisterInputChange = (e) => {
@@ -174,6 +223,12 @@ function Regcont() {
         </div>
         <div className="login-content">
           <form onSubmit={handleLoginSubmit}>
+            {error && !isRegisterModalOpen && (
+              <div className="error-message" style={{ marginBottom: '16px' }}>
+                ❌ {error}
+              </div>
+            )}
+            
             <div className="login-input">
               <input 
                 type="text" 
@@ -181,6 +236,7 @@ function Regcont() {
                 placeholder="Введите логин..." 
                 value={loginData.login}
                 onChange={handleLoginInputChange}
+                disabled={isLoading}
                 required
               />
               <input 
@@ -189,10 +245,17 @@ function Regcont() {
                 placeholder="Введите пароль..." 
                 value={loginData.password}
                 onChange={handleLoginInputChange}
+                disabled={isLoading}
                 required
               />
             </div>
-            <button type="submit" className="login-btn">Войти</button>
+            <button 
+              type="submit" 
+              className="login-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Вход...' : 'Войти'}
+            </button>
           </form>
           <button className="login-reg" onClick={handleRegisterClick}>
             Регистрация

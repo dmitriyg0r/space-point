@@ -280,4 +280,78 @@
     width: 20px;
     height: 20px;
     color: rgb(255, 255, 255);
+}/* Стил
+и для информации о пользователе и кнопки выхода */
+.sidebar-user-info {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.user-info {
+  margin-bottom: 12px;
+}
+
+.user-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-username {
+  color: #bdbdf7;
+  font-size: 12px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 101, 101, 0.1);
+  border: 1px solid rgba(255, 101, 101, 0.3);
+  border-radius: 8px;
+  color: #ff6565;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background: rgba(255, 101, 101, 0.2);
+  border-color: rgba(255, 101, 101, 0.5);
+}
+
+.logout-ico {
+  width: 16px;
+  height: 16px;
+}
+
+/* Стили для свернутого состояния */
+.sidebar.collapsed .sidebar-user-info {
+  padding: 8px;
+}
+
+.sidebar.collapsed .user-info {
+  display: none;
+}
+
+.sidebar.collapsed .logout-button span {
+  display: none;
+}
+
+.sidebar.collapsed .logout-button {
+  justify-content: center;
+  padding: 8px;
 }

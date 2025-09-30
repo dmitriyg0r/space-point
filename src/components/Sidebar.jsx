@@ -3,7 +3,7 @@ import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './Sidebar.css'
 import logoImage from '../assets/logo.png'
 
-const Sidebar = () => {
+const Sidebar = ({ currentUser, onLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed);
@@ -81,6 +81,18 @@ const Sidebar = () => {
         <div className='sidebar-research'>
             <icons.Search className='sidebar-research-ico'/>
             <p>Иследовать</p>
+        </div>
+        
+        {/* Информация о пользователе и кнопка выхода */}
+        <div className='sidebar-user-info'>
+            <div className='user-info'>
+                <p className='user-name'>{currentUser?.name || 'Пользователь'}</p>
+                <p className='user-username'>@{currentUser?.username || 'username'}</p>
+            </div>
+            <button className='logout-button' onClick={onLogout} title="Выйти">
+                <icons.Exit className='logout-ico'/>
+                <span>Выйти</span>
+            </button>
         </div>
         </div>
       </div>

@@ -21,12 +21,7 @@ dotenv.config({
 console.log('⚙️ dotenv настроен');
 
 // Импорт базы данных
-import('./config/database.js').then(({ default: pool }) => {
-    global.pool = pool;
-    console.log('🗄️ База данных подключена');
-}).catch(err => {
-    console.error('❌ Ошибка подключения к базе данных:', err.message);
-});
+import pool from './config/database.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -150,12 +145,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     try {
-        if (!global.pool) {
-            return res.status(500).json({
-                success: false,
-                message: 'База данных не подключена'
-            });
-        }
+
 
         // Генерируем уникальный username из имени
         let username = generateUsername(name);
@@ -164,7 +154,7 @@ app.post('/api/auth/register', async (req, res) => {
         let usernameExists = true;
         let attempts = 0;
         while (usernameExists && attempts < 10) {
-            const existingUsername = await global.pool.query(`
+            const existingUsername = await pool.query(`
                 SELECT id FROM users WHERE username = $1
             `, [username]);
 
@@ -178,7 +168,7 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         // Проверяем, существует ли пользователь с таким логином или email
-        const existingUser = await global.pool.query(`
+        const existingUser = await pool.query(`
             SELECT id FROM users 
             WHERE email = $1
         `, [email]);
@@ -195,7 +185,7 @@ app.post('/api/auth/register', async (req, res) => {
         const password_hash = await bcrypt.hash(password, saltRounds);
 
         // Создаем пользователя
-        const result = await global.pool.query(`
+        const result = await pool.query(`
             INSERT INTO users (name, username, email, password_hash, user_avatar, profile_info, is_online, role)
             VALUES ($1, $2, $3, $4, $5, $6, false, 'user')
             RETURNING 
@@ -240,6 +230,103 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Внутренняя ошибка сервера при регистрации'
+        });
+    }
+});
+
+// Вход в систему
+app.post('/api/auth/login', async (req, res) => {
+    console.log('🔐 Попытка входа в систему');
+    console.log('Данные запроса:', { login: req.body.login, password: req.body.password ? '***' : 'отсутствует' });
+    
+    const { login, password } = req.body;
+    
+    // Валидация обязательных полей
+    if (!login || !password) {
+        console.log('❌ Отсутствуют обязательные поля');
+        return res.status(400).json({
+            success: false,
+            message: 'Логин и пароль обязательны'
+        });
+    }
+
+    try {
+        console.log('🔍 Поиск пользователя с логином:', login);
+        
+        // Ищем пользователя по username или email
+        const userResult = await pool.query(`
+            SELECT 
+                id,
+                name,
+                username,
+                email,
+                password_hash,
+                user_avatar,
+                profile_info,
+                is_online,
+                role,
+                created_at
+            FROM users 
+            WHERE username = $1 OR email = $1
+        `, [login]);
+
+        console.log('👥 Найдено пользователей:', userResult.rows.length);
+
+        if (userResult.rows.length === 0) {
+            console.log('❌ Пользователь не найден');
+            return res.status(401).json({
+                success: false,
+                message: 'Неверный логин или пароль'
+            });
+        }
+
+        const user = userResult.rows[0];
+        console.log('👤 Найден пользователь:', user.username);
+
+        // Проверяем пароль
+        console.log('🔐 Проверка пароля...');
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+        console.log('🔐 Пароль совпадает:', passwordMatch);
+        
+        if (!passwordMatch) {
+            console.log('❌ Неверный пароль');
+            return res.status(401).json({
+                success: false,
+                message: 'Неверный логин или пароль'
+            });
+        }
+
+        console.log('📝 Обновление статуса пользователя...');
+        // Обновляем статус онлайн и время последнего входа
+        await pool.query(`
+            UPDATE users 
+            SET is_online = true, lastlogin_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+        `, [user.id]);
+
+        console.log('✅ Успешный вход пользователя:', user.name);
+        
+        // Возвращаем данные пользователя (без пароля)
+        res.json({
+            success: true,
+            message: 'Успешный вход в систему',
+            user: {
+                id: user.id,
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                user_avatar: user.user_avatar,
+                profile_info: user.profile_info,
+                role: user.role,
+                is_online: true,
+                created_at: user.created_at
+            }
+        });
+    } catch (error) {
+        console.error('💥 Ошибка входа в систему:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Внутренняя ошибка сервера при входе'
         });
     }
 });
