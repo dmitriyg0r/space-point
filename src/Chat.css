@@ -1,3 +1,31 @@
 .Chat-page{
     display: flex;
 }
+
+.chat-loading, .chat-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    height: 100vh;
+}
+
+.chat-error {
+    flex-direction: column;
+    gap: 20px;
+}
+
+.chat-error button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.messages-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
