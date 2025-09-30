@@ -90,7 +90,7 @@ const Sidebar = ({ currentUser, onLogout }) => {
                 <p className='user-username'>@{currentUser?.username || 'username'}</p>
             </div>
             <button className='logout-button' onClick={onLogout} title="Выйти">
-                <icons.Exit className='logout-ico'/>
+                <icons.Arrow className='logout-ico'/>
                 <span>Выйти</span>
             </button>
         </div>
