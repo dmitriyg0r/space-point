@@ -106,12 +106,24 @@ function Regcont() {
     
     try {
       // Отправляем данные на сервер
+      console.log('Отправляем POST запрос на:', `${API_BASE_URL}/auth/register`);
+      console.log('Данные:', {
+        name: registerData.name,
+        email: registerData.email,
+        password: '***'
+      });
+      
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         name: registerData.name,
         email: registerData.email,
         password: registerData.password,
         user_avatar: `https://i.pravatar.cc/150?u=${registerData.name}`, // Генерируем аватар
         profile_info: `Пользователь ${registerData.name}`
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000 // 10 секунд таймаут
       });
 
       if (response.data.success) {

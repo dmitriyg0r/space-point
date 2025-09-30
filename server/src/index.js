@@ -62,21 +62,26 @@ app.use(cors({
 
 // Дополнительные CORS заголовки
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+    const origin = req.get('Origin');
+    res.header('Access-Control-Allow-Origin', origin || '*');
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     
     if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
+        console.log(`OPTIONS preflight request from ${origin} to ${req.path}`);
+        return res.sendStatus(200);
     }
+    
+    next();
 });
 
 // Логирование всех запросов для отладки
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin')} - Content-Type: ${req.get('Content-Type')}`);
+    if (req.method === 'POST' && req.path.includes('/auth/register')) {
+        console.log('POST body:', JSON.stringify(req.body, null, 2));
+    }
     next();
 });
 
