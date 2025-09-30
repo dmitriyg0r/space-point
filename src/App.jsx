@@ -4,6 +4,7 @@ import './App.css'
 import Sidebar from './components/Sidebar'
 import UserProfile from './components/UserProfile';
 import Regcont from './components/Regcont';
+import Starfield from './components/Starfield'; // Импортируем компонент звезд
 
 // Глобальная функция для входа (временное решение)
 window.handleGlobalLogin = null;
@@ -54,14 +55,24 @@ function App() {
   // Если пользователь не аутентифицирован, показываем форму входа/регистрации
   if (!isAuthenticated) {
     console.log('App передает onLogin в Regcont:', typeof handleLogin, handleLogin);
-    return <Regcont onLogin={handleLogin} />;
+    return (
+      <div style={{ position: 'relative', minHeight: '100vh' }}>
+        <Starfield />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <Regcont onLogin={handleLogin} />
+        </div>
+      </div>
+    );
   }
 
   // Если пользователь аутентифицирован, показываем основное приложение
   return (
-    <div className='Profile-page'>
-      <Sidebar currentUser={currentUser} onLogout={handleLogout} />
-      <UserProfile currentUser={currentUser} />
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
+      <Starfield />
+      <div className='Profile-page' style={{ position: 'relative', zIndex: 1 }}>
+        <Sidebar currentUser={currentUser} onLogout={handleLogout} />
+        <UserProfile currentUser={currentUser} />
+      </div>
     </div>
   )
 }

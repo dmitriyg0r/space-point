@@ -10,6 +10,7 @@ function UserProfile({ currentUser }) {
       </div>
       <div className='Profile-info'>
         <div className='Profile-main-content'>
+          <div className='Profile-avatarback'>
           <div className='Profile-avatar'>
             {currentUser?.user_avatar ? (
               <img src={currentUser.user_avatar} alt="Avatar" />
@@ -18,10 +19,10 @@ function UserProfile({ currentUser }) {
                 {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
             )}
+            </div>
           </div>
           <div className='Profile-info-text'>
-            <h1>{currentUser?.name || 'Пользователь'}</h1>
-            <p>{currentUser?.email || 'email@example.com'}</p>
+            <h1>{currentUser?.name || 'Пользователь'}</h1>  
             <span className="username">@{currentUser?.username || 'username'}</span>
           </div>
         </div>
