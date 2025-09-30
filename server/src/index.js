@@ -29,7 +29,7 @@ import('./config/database.js').then(({ default: pool }) => {
 });
 
 const app = express();
-const PORT = process.env.PORT || 3001; 
+const PORT = process.env.PORT || 3001;
 
 console.log('🌐 Express приложение создано');
 
@@ -75,7 +75,7 @@ function transliterate(text) {
         'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
         ' ': '_', '-': '_'
     };
-    
+
     return text.split('').map(char => translitMap[char] || char).join('');
 }
 
@@ -83,48 +83,31 @@ function transliterate(text) {
 function generateUsername(name) {
     // Транслитерируем имя
     let username = transliterate(name.toLowerCase());
-    
+
     // Убираем все символы кроме букв, цифр и подчеркиваний
     username = username.replace(/[^a-zA-Z0-9_]/g, '');
-    
+
     // Если username пустой после очистки, используем default
     if (!username) {
         username = 'user';
     }
-    
+
     // Добавляем 5 случайных цифр
     const randomNumbers = Math.floor(10000 + Math.random() * 90000);
     username += randomNumbers;
-    
+
     return username;
 }
 
 // Регистрация нового пользователя
 app.post('/api/auth/register', async (req, res) => {
-    const { name, login, email, password, user_avatar, profile_info } = req.body;
-    
+    const { name, email, password, user_avatar, profile_info } = req.body;
+
     // Валидация обязательных полей
-    if (!name || !login || !email || !password) {
+    if (!name || !email || !password) {
         return res.status(400).json({
             success: false,
-            message: 'Имя, логин, email и пароль обязательны'
-        });
-    }
-
-    // Валидация логина (только английские буквы, цифры и подчеркивания)
-    const loginRegex = /^[a-zA-Z0-9_]+$/;
-    if (!loginRegex.test(login)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Логин должен содержать только английские буквы, цифры и подчеркивания'
-        });
-    }
-
-    // Валидация длины логина
-    if (login.length < 3 || login.length > 20) {
-        return res.status(400).json({
-            success: false,
-            message: 'Логин должен содержать от 3 до 20 символов'
+            message: 'Имя, email и пароль обязательны'
         });
     }
 
@@ -155,7 +138,7 @@ app.post('/api/auth/register', async (req, res) => {
 
         // Генерируем уникальный username из имени
         let username = generateUsername(name);
-        
+
         // Проверяем уникальность username и генерируем новый если нужно
         let usernameExists = true;
         let attempts = 0;
@@ -163,7 +146,7 @@ app.post('/api/auth/register', async (req, res) => {
             const existingUsername = await global.pool.query(`
                 SELECT id FROM users WHERE username = $1
             `, [username]);
-            
+
             if (existingUsername.rows.length === 0) {
                 usernameExists = false;
             } else {
@@ -215,7 +198,6 @@ app.post('/api/auth/register', async (req, res) => {
                 id: newUser.id,
                 name: newUser.name,
                 username: newUser.username,
-                login: login, // Возвращаем введенный логин для отображения
                 email: newUser.email,
                 user_avatar: newUser.user_avatar,
                 profile_info: newUser.profile_info,
@@ -225,7 +207,7 @@ app.post('/api/auth/register', async (req, res) => {
         });
     } catch (error) {
         console.error('Ошибка регистрации пользователя:', error);
-        
+
         // Обработка специфичных ошибок PostgreSQL
         if (error.code === '23505') { // Unique violation
             return res.status(409).json({
@@ -233,7 +215,7 @@ app.post('/api/auth/register', async (req, res) => {
                 message: 'Пользователь с таким email уже существует'
             });
         }
-        
+
         res.status(500).json({
             success: false,
             message: 'Внутренняя ошибка сервера при регистрации'
