@@ -23,7 +23,7 @@ const Friends = ({ currentUser }) => {
     const loadFriends = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:5000/api/friends', {
+            const response = await axios.get('http://localhost:3001/api/friends', {
                 headers: { 'x-user-id': currentUser.id }
             });
             setFriends(response.data.friends);
@@ -37,7 +37,7 @@ const Friends = ({ currentUser }) => {
 
     const loadIncomingRequests = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/friends/requests/incoming', {
+            const response = await axios.get('http://localhost:3001/api/friends/requests/incoming', {
                 headers: { 'x-user-id': currentUser.id }
             });
             setIncomingRequests(response.data.requests);
@@ -48,7 +48,7 @@ const Friends = ({ currentUser }) => {
 
     const loadOutgoingRequests = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/friends/requests/outgoing', {
+            const response = await axios.get('http://localhost:3001/api/friends/requests/outgoing', {
                 headers: { 'x-user-id': currentUser.id }
             });
             setOutgoingRequests(response.data.requests);
@@ -64,7 +64,7 @@ const Friends = ({ currentUser }) => {
         }
 
         try {
-            const response = await axios.get(`http://localhost:5000/api/friends/search?query=${encodeURIComponent(query)}`, {
+            const response = await axios.get(`http://localhost:3001/api/friends/search?query=${encodeURIComponent(query)}`, {
                 headers: { 'x-user-id': currentUser.id }
             });
             setSearchResults(response.data.users);
@@ -75,7 +75,7 @@ const Friends = ({ currentUser }) => {
 
     const sendFriendRequest = async (friendId) => {
         try {
-            await axios.post(`http://localhost:5000/api/friends/${friendId}/request`, {}, {
+            await axios.post(`http://localhost:3001/api/friends/${friendId}/request`, {}, {
                 headers: { 'x-user-id': currentUser.id }
             });
             loadOutgoingRequests();
@@ -87,7 +87,7 @@ const Friends = ({ currentUser }) => {
 
     const acceptFriendRequest = async (friendId) => {
         try {
-            await axios.post(`http://localhost:5000/api/friends/${friendId}/accept`, {}, {
+            await axios.post(`http://localhost:3001/api/friends/${friendId}/accept`, {}, {
                 headers: { 'x-user-id': currentUser.id }
             });
             loadIncomingRequests();
@@ -99,7 +99,7 @@ const Friends = ({ currentUser }) => {
 
     const rejectFriendRequest = async (friendId) => {
         try {
-            await axios.post(`http://localhost:5000/api/friends/${friendId}/reject`, {}, {
+            await axios.post(`http://localhost:3001/api/friends/${friendId}/reject`, {}, {
                 headers: { 'x-user-id': currentUser.id }
             });
             loadIncomingRequests();
@@ -110,7 +110,7 @@ const Friends = ({ currentUser }) => {
 
     const removeFriend = async (friendId) => {
         try {
-            await axios.delete(`http://localhost:5000/api/friends/${friendId}`, {
+            await axios.delete(`http://localhost:3001/api/friends/${friendId}`, {
                 headers: { 'x-user-id': currentUser.id }
             });
             loadFriends();

@@ -32,7 +32,7 @@ const Chat = () => {
                 setLoading(true);
                 
                 // Получаем чаты пользователя
-                const chatsResponse = await axios.get('http://localhost:5000/api/chat/chats', {
+                const chatsResponse = await axios.get('http://localhost:3001/api/chat/chats', {
                     headers: {
                         'x-user-id': currentUser.id
                     }
@@ -40,7 +40,7 @@ const Chat = () => {
                 setChats(chatsResponse.data.chats);
 
                 // Получаем всех пользователей
-                const usersResponse = await axios.get('http://localhost:5000/api/chat/users', {
+                const usersResponse = await axios.get('http://localhost:3001/api/chat/users', {
                     headers: {
                         'x-user-id': currentUser.id
                     }

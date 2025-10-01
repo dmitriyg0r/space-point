@@ -19,7 +19,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
 
                 if (isPrivateChat && user) {
                     // Создаем или получаем приватный чат
-                    response = await axios.get(`http://localhost:5000/api/chat/private/${user.id}`, {
+                    response = await axios.get(`http://localhost:3001/api/chat/private/${user.id}`, {
                         headers: {
                             'x-user-id': currentUser.id
                         }
@@ -49,7 +49,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
 
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:5000/api/chat/${chatId}/messages`, {
+                const response = await axios.get(`http://localhost:3001/api/chat/${chatId}/messages`, {
                     headers: {
                         'x-user-id': currentUser.id
                     }
@@ -70,7 +70,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         if (!newMessage.trim() || !chatId || !currentUser) return;
 
         try {
-            const response = await axios.post(`http://localhost:5000/api/chat/${chatId}/messages`, {
+            const response = await axios.post(`http://localhost:3001/api/chat/${chatId}/messages`, {
                 text: newMessage.trim()
             }, {
                 headers: {

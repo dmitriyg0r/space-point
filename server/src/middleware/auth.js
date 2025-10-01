@@ -1,16 +1,6 @@
 import pool from '../config/database.js';
 
 export async function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Токен доступа не предоставлен' 
-    });
-  }
-
   try {
     // В реальном приложении здесь должна быть проверка JWT токена
     // Для простоты используем userId из заголовка
