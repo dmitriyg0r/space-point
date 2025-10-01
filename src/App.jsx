@@ -7,6 +7,7 @@ import UserProfile from './components/UserProfile';
 import Regcont from './components/Regcont';
 import Starfield from './components/Starfield'; // Импортируем компонент звезд
 import Chat from './Chat';
+import Friends from './components/Friends';
 
 // Глобальная функция для входа (временное решение)
 window.handleGlobalLogin = null;
@@ -77,6 +78,7 @@ function App() {
           <Route path="/" element={<UserProfile currentUser={currentUser} />} />
           <Route path="/profile" element={<UserProfile currentUser={currentUser} />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/friends" element={<Friends currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

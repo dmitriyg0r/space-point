@@ -12,6 +12,8 @@ import requestLogger from './middleware/logger.js';
 
 // routes
 import authRoutes from './routes/auth.routes.js';
+import chatRoutes from './routes/chat.routes.js';
+import friendsRoutes from './routes/friends.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +46,8 @@ app.get('/api/test', (req, res) => {
 
 // feature routes
 app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/friends', friendsRoutes);
 
 export default app;
 

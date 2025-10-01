@@ -57,7 +57,7 @@ const Sidebar = ({ currentUser, onLogout }) => {
             <icons.Telescope className='sidebar-button-ico'/>
             <p>Иследования</p>
         </div>
-        <div className='sidebar-button'>
+        <div className={`sidebar-button ${location.pathname === '/friends' ? 'active' : ''}`} onClick={() => handleNavigation('/friends')}>
             <icons.Crew className='sidebar-button-ico'/>
             <p>Экипаж</p>
         </div>

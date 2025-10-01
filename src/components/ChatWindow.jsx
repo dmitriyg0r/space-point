@@ -2,18 +2,59 @@ import { useState, useEffect } from 'react';
 import './ChatWindow.css';
 import axios from 'axios';
 
-const ChatWindow = ({ user }) => {
+const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [chatId, setChatId] = useState(null);
 
-    // Загрузка сообщений при выборе пользователя
+    // Получение или создание чата
     useEffect(() => {
-        const fetchMessages = async () => {
+        const getOrCreateChat = async () => {
+            if (!currentUser) return;
+
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:5000/api/chat/messages');
-                setMessages(response.data.messages);
+                let response;
+
+                if (isPrivateChat && user) {
+                    // Создаем или получаем приватный чат
+                    response = await axios.get(`http://localhost:5000/api/chat/private/${user.id}`, {
+                        headers: {
+                            'x-user-id': currentUser.id
+                        }
+                    });
+                } else if (chat) {
+                    // Используем существующий чат
+                    response = { data: { success: true, chat: chat } };
+                }
+
+                if (response?.data?.success) {
+                    setChatId(response.data.chat.id);
+                }
+            } catch (err) {
+                console.error('Error getting chat:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        getOrCreateChat();
+    }, [user, chat, currentUser, isPrivateChat]);
+
+    // Загрузка сообщений
+    useEffect(() => {
+        const fetchMessages = async () => {
+            if (!chatId || !currentUser) return;
+
+            try {
+                setLoading(true);
+                const response = await axios.get(`http://localhost:5000/api/chat/${chatId}/messages`, {
+                    headers: {
+                        'x-user-id': currentUser.id
+                    }
+                });
+                setMessages(response.data.messages || []);
             } catch (err) {
                 console.error('Error fetching messages:', err);
             } finally {
@@ -22,16 +63,19 @@ const ChatWindow = ({ user }) => {
         };
 
         fetchMessages();
-    }, [user]);
+    }, [chatId, currentUser]);
 
     // Отправка нового сообщения
     const sendMessage = async () => {
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || !chatId || !currentUser) return;
 
         try {
-            const response = await axios.post('http://localhost:5000/api/chat/messages', {
-                user_id: user.id,
-                message: newMessage.trim()
+            const response = await axios.post(`http://localhost:5000/api/chat/${chatId}/messages`, {
+                text: newMessage.trim()
+            }, {
+                headers: {
+                    'x-user-id': currentUser.id
+                }
             });
 
             // Добавляем новое сообщение в список
@@ -48,15 +92,49 @@ const ChatWindow = ({ user }) => {
         }
     };
 
+    const getDisplayName = () => {
+        if (user) {
+            return user.name || user.username;
+        }
+        if (chat) {
+            return chat.title || 'Безымянный чат';
+        }
+        return 'Неизвестно';
+    };
+
+    const getAvatar = () => {
+        if (user) {
+            return user.user_avatar || '/default-avatar.png';
+        }
+        if (chat) {
+            return chat.avatar_url || '/default-chat.png';
+        }
+        return '/default-avatar.png';
+    };
+
+    const isOnline = () => {
+        if (user) {
+            return user.is_online;
+        }
+        return false;
+    };
+
+    const formatMessageTime = (timestamp) => {
+        return new Date(timestamp).toLocaleTimeString('ru-RU', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
+
     return (
         <div className="chat-window">
             <div className="chat-window-header">
                 <div className="chat-window-user">
-                    <img src={user.avatar} alt={user.name} />
+                    <img src={getAvatar()} alt={getDisplayName()} />
                     <div>
-                        <h3>{user.name}</h3>
+                        <h3>{getDisplayName()}</h3>
                         <span className="user-status">
-                            {user.isOnline ? 'online' : 'offline'}
+                            {isOnline() ? 'online' : 'offline'}
                         </span>
                     </div>
                 </div>
@@ -67,11 +145,11 @@ const ChatWindow = ({ user }) => {
                     <div className="messages-loading">Загрузка сообщений...</div>
                 ) : (
                     messages.map(message => (
-                        <div key={message.id} className="message">
+                        <div key={message.id} className={`message ${message.user_id === currentUser?.id ? 'message-own' : 'message-other'}`}>
                             <div className="message-content">
-                                <p>{message.message}</p>
+                                <p>{message.text}</p>
                                 <span className="message-time">
-                                    {new Date(message.timestamp).toLocaleTimeString()}
+                                    {formatMessageTime(message.created_at)}
                                 </span>
                             </div>
                         </div>
