@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  Search, 
+  UserPlus, 
+  UserMinus, 
+  MessageCircle, 
+  Zap,
+  Radio,
+  Users,
+  Satellite
+} from 'lucide-react';
 import './Friends.css';
 
 const Friends = ({ currentUser }) => {
@@ -131,168 +141,330 @@ const Friends = ({ currentUser }) => {
         return 'none';
     };
 
-    const renderUserCard = (user, showActions = true) => (
-        <div key={user.id} className="user-card">
-            <div className="user-avatar">
-                <img src={user.user_avatar || '/default-avatar.png'} alt={user.name} />
-                {user.is_online && <span className="online-dot"></span>}
-            </div>
-            <div className="user-info">
-                <h4>{user.name}</h4>
-                <p>@{user.username}</p>
-                {user.is_online ? (
-                    <span className="status online">В сети</span>
-                ) : (
-                    <span className="status offline">Не в сети</span>
-                )}
-            </div>
-            {showActions && (
-                <div className="user-actions">
-                    {getFriendshipStatus(user) === 'none' && (
-                        <button 
-                            className="btn-primary"
-                            onClick={() => sendFriendRequest(user.id)}
-                        >
-                            Добавить в друзья
-                        </button>
+    // Функция для получения текущих данных в зависимости от активной вкладки
+    const getCurrentData = () => {
+        switch (activeTab) {
+            case 'friends':
+                return friends;
+            case 'search':
+                return searchResults;
+            case 'requests':
+                return [...incomingRequests, ...outgoingRequests];
+            default:
+                return [];
+        }
+    };
+
+    const getOnlineCount = () => {
+        return friends.filter(friend => friend.is_online).length;
+    };
+
+    const getTotalCount = () => {
+        switch (activeTab) {
+            case 'friends':
+                return friends.length;
+            case 'requests':
+                return incomingRequests.length + outgoingRequests.length;
+            case 'search':
+                return searchResults.length;
+            default:
+                return 0;
+        }
+    };
+
+    // Рендер карточки пользователя в новом стиле
+    const renderUserCard = (user, showActions = true, isRequest = false, isIncoming = false) => (
+        <div key={user.id} className="crew-card">
+            {/* Holographic effect */}
+            <div className="card-top-glow"></div>
+            
+            <div className="card-content">
+                {/* Header with Avatar and Status */}
+                <div className="member-header">
+                    <div className="avatar-container">
+                        <div className="avatar-glow"></div>
+                        <div className="avatar-frame">
+                            <img 
+                                src={user.user_avatar || user.avatar || '/default-avatar.png'} 
+                                alt={user.name} 
+                                className="avatar-image" 
+                            />
+                        </div>
+                        {user.is_online && (
+                            <div className="online-indicator"></div>
+                        )}
+                    </div>
+
+                    <div className="member-info">
+                        <div className="name-row">
+                            <h3 className="member-name">{user.name}</h3>
+                            {user.isVerified && (
+                                <div className="verified-badge">
+                                    <Zap className="verified-icon" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="username-row">
+                            <span className="member-username">@{user.username}</span>
+                        </div>
+                        <div className="role-row">
+                            <Radio className="role-icon" />
+                            <span className="member-role">
+                                {isRequest ? (isIncoming ? 'Входящий запрос' : 'Исходящий запрос') : 'Участник'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bio */}
+                <p className="member-bio">
+                    {user.bio || user.profile_info || 'Активный участник экипажа'}
+                </p>
+
+                {/* Stats */}
+                <div className="member-stats">
+                    <div className="followers-stat">
+                        <Users className="stat-icon" />
+                        <span className="stat-value">
+                            {user.followers ? user.followers.toLocaleString() : '0'}
+                        </span>
+                    </div>
+                    {user.is_online && (
+                        <div className="online-stat">
+                            <div className="online-dot"></div>
+                            <span className="online-text">АКТИВЕН</span>
+                        </div>
                     )}
-                    {getFriendshipStatus(user) === 'pending' && (
-                        <span className="status-pending">Запрос отправлен</span>
-                    )}
-                    {getFriendshipStatus(user) === 'friend' && (
-                        <button 
-                            className="btn-danger"
-                            onClick={() => removeFriend(user.id)}
-                        >
-                            Удалить из друзей
-                        </button>
+                    {isRequest && (
+                        <div className="request-time">
+                            {new Date(user.created_at).toLocaleDateString('ru-RU')}
+                        </div>
                     )}
                 </div>
-            )}
-        </div>
-    );
 
-    const renderRequestCard = (request, isIncoming = false) => (
-        <div key={request.id} className="request-card">
-            <div className="user-avatar">
-                <img src={request.user_avatar || '/default-avatar.png'} alt={request.name} />
-            </div>
-            <div className="user-info">
-                <h4>{request.name}</h4>
-                <p>@{request.username}</p>
-                <span className="request-time">
-                    {new Date(request.created_at).toLocaleDateString('ru-RU')}
-                </span>
-            </div>
-            <div className="request-actions">
-                {isIncoming ? (
-                    <>
-                        <button 
-                            className="btn-success"
-                            onClick={() => acceptFriendRequest(request.user_id)}
-                        >
-                            Принять
+                {/* Actions */}
+                <div className="member-actions">
+                    {!isRequest && (
+                        <button className="msg-button">
+                            <MessageCircle className="button-icon" />
+                            MSG
                         </button>
-                        <button 
-                            className="btn-danger"
-                            onClick={() => rejectFriendRequest(request.user_id)}
-                        >
-                            Отклонить
-                        </button>
-                    </>
-                ) : (
-                    <span className="status-pending">Ожидает ответа</span>
-                )}
+                    )}
+                    
+                    {showActions && (
+                        <>
+                            {isRequest && isIncoming ? (
+                                <>
+                                    <button 
+                                        className="btn-success"
+                                        onClick={() => acceptFriendRequest(user.user_id || user.id)}
+                                    >
+                                        Принять
+                                    </button>
+                                    <button 
+                                        className="btn-danger"
+                                        onClick={() => rejectFriendRequest(user.user_id || user.id)}
+                                    >
+                                        Отклонить
+                                    </button>
+                                </>
+                            ) : isRequest ? (
+                                <span className="status-pending">Ожидает ответа</span>
+                            ) : getFriendshipStatus(user) === 'none' ? (
+                                <button 
+                                    className="follow-btn not-following"
+                                    onClick={() => sendFriendRequest(user.id)}
+                                >
+                                    <UserPlus className="button-icon" />
+                                    СЛЕДИТЬ
+                                </button>
+                            ) : getFriendshipStatus(user) === 'pending' ? (
+                                <span className="status-pending">Запрос отправлен</span>
+                            ) : (
+                                <button 
+                                    className="follow-btn following"
+                                    onClick={() => removeFriend(user.id)}
+                                >
+                                    <UserMinus className="button-icon" />
+                                    ОТПИСКА
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
+
+            {/* Bottom glow */}
+            <div className="card-bottom-glow"></div>
         </div>
     );
 
     if (loading) {
         return (
-            <div className="friends-loading">
-                <h3>Загрузка...</h3>
+            <div className="crew-page">
+                <div className="crew-container">
+                    <div className="loading-crew">Загрузка экипажа...</div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="friends-container">
-            <div className="friends-header">
-                <h2>Друзья</h2>
-                <div className="friends-tabs">
-                    <button 
-                        className={activeTab === 'friends' ? 'active' : ''}
-                        onClick={() => setActiveTab('friends')}
-                    >
-                        Друзья ({friends.length})
-                    </button>
-                    <button 
-                        className={activeTab === 'requests' ? 'active' : ''}
-                        onClick={() => setActiveTab('requests')}
-                    >
-                        Запросы ({incomingRequests.length})
-                    </button>
-                    <button 
-                        className={activeTab === 'search' ? 'active' : ''}
-                        onClick={() => setActiveTab('search')}
-                    >
-                        Поиск
-                    </button>
-                </div>
+        <div className="crew-page">
+            {/* Floating particles */}
+            <div className="floating-particles">
+                {[...Array(25)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="particle"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 4}s`,
+                            animationDuration: `${2 + Math.random() * 3}s`
+                        }}
+                    />
+                ))}
             </div>
 
-            <div className="friends-content">
-                {activeTab === 'friends' && (
-                    <div className="friends-list">
-                        {friends.length === 0 ? (
-                            <p className="empty-state">У вас пока нет друзей</p>
-                        ) : (
-                            friends.map(friend => renderUserCard(friend, false))
-                        )}
+            {/* Content Container */}
+            <div className="crew-container">
+                {/* Header */}
+                <div className="crew-header-section">
+                    <div className="header-background">
+                        <div className="header-scan-line"></div>
+                        
+                        <div className="header-content">
+                            <div className="header-top">
+                                <div className="header-title-section">
+                                    <div className="title-icon">
+                                        <div className="icon-glow"></div>
+                                        <div className="icon-circle">
+                                            <Users className="icon" />
+                                        </div>
+                                    </div>
+                                    <div className="title-text">
+                                        <h1 className="crew-title">ЭКИПАЖ</h1>
+                                        <div className="crew-stats">
+                                            <div className="online-stat">
+                                                <div className="stat-dot"></div>
+                                                <span className="stat-text">{getOnlineCount()} ONLINE</span>
+                                            </div>
+                                            <span className="stat-separator">•</span>
+                                            <span className="total-stat">{getTotalCount()} TOTAL</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Satellite className="header-satellite" />
+                            </div>
+
+                            {/* Search and Tabs */}
+                            <div className="search-filters">
+                                <div className="search-container">
+                                    <Search className="search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="[SCAN] Поиск по экипажу..."
+                                        value={searchQuery}
+                                        onChange={handleSearchChange}
+                                        className="search-input"
+                                    />
+                                </div>
+
+                                <div className="filter-buttons">
+                                    <button
+                                        onClick={() => setActiveTab('friends')}
+                                        className={`filter-button ${activeTab === 'friends' ? 'active' : ''}`}
+                                    >
+                                        ДРУЗЬЯ ({friends.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('requests')}
+                                        className={`filter-button ${activeTab === 'requests' ? 'active' : ''}`}
+                                    >
+                                        ЗАПРОСЫ ({incomingRequests.length + outgoingRequests.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('search')}
+                                        className={`filter-button ${activeTab === 'search' ? 'active' : ''}`}
+                                    >
+                                        <Zap className="filter-icon" />
+                                        ПОИСК
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                )}
+                </div>
 
-                {activeTab === 'requests' && (
-                    <div className="requests-section">
-                        <div className="incoming-requests">
-                            <h3>Входящие запросы ({incomingRequests.length})</h3>
-                            {incomingRequests.length === 0 ? (
-                                <p className="empty-state">Нет входящих запросов</p>
+                {/* Content Grid */}
+                <div className="crew-grid">
+                    {activeTab === 'friends' && (
+                        <>
+                            {friends.length === 0 ? (
+                                <div className="no-results">
+                                    <Radio className="no-results-icon" />
+                                    <p className="no-results-text">[NO_SIGNAL] Друзей не найдено</p>
+                                    <p className="no-results-subtext">Начните добавлять друзей через поиск</p>
+                                </div>
                             ) : (
-                                incomingRequests.map(request => renderRequestCard(request, true))
+                                friends.map(friend => renderUserCard(friend, false))
                             )}
-                        </div>
+                        </>
+                    )}
 
-                        <div className="outgoing-requests">
-                            <h3>Исходящие запросы ({outgoingRequests.length})</h3>
-                            {outgoingRequests.length === 0 ? (
-                                <p className="empty-state">Нет исходящих запросов</p>
+                    {activeTab === 'requests' && (
+                        <>
+                            {incomingRequests.length === 0 && outgoingRequests.length === 0 ? (
+                                <div className="no-results">
+                                    <Radio className="no-results-icon" />
+                                    <p className="no-results-text">[NO_SIGNAL] Запросов не найдено</p>
+                                    <p className="no-results-subtext">Здесь появятся входящие и исходящие запросы</p>
+                                </div>
                             ) : (
-                                outgoingRequests.map(request => renderRequestCard(request, false))
+                                <>
+                                    {incomingRequests.length > 0 && (
+                                        <div className="requests-section">
+                                            <h3 className="requests-title">Входящие запросы</h3>
+                                            {incomingRequests.map(request => 
+                                                renderUserCard(request, true, true, true)
+                                            )}
+                                        </div>
+                                    )}
+                                    {outgoingRequests.length > 0 && (
+                                        <div className="requests-section">
+                                            <h3 className="requests-title">Исходящие запросы</h3>
+                                            {outgoingRequests.map(request => 
+                                                renderUserCard(request, true, true, false)
+                                            )}
+                                        </div>
+                                    )}
+                                </>
                             )}
-                        </div>
-                    </div>
-                )}
+                        </>
+                    )}
 
-                {activeTab === 'search' && (
-                    <div className="search-section">
-                        <div className="search-input">
-                            <input
-                                type="text"
-                                placeholder="Поиск пользователей..."
-                                value={searchQuery}
-                                onChange={handleSearchChange}
-                            />
-                        </div>
-                        <div className="search-results">
+                    {activeTab === 'search' && (
+                        <>
                             {searchResults.length === 0 && searchQuery.length >= 2 ? (
-                                <p className="empty-state">Пользователи не найдены</p>
+                                <div className="no-results">
+                                    <Radio className="no-results-icon" />
+                                    <p className="no-results-text">[NO_SIGNAL] Пользователи не найдены</p>
+                                    <p className="no-results-subtext">Попробуйте изменить параметры поиска</p>
+                                </div>
+                            ) : searchResults.length === 0 ? (
+                                <div className="no-results">
+                                    <Radio className="no-results-icon" />
+                                    <p className="no-results-text">[SCAN_READY] Введите запрос для поиска</p>
+                                    <p className="no-results-subtext">Минимум 2 символа для начала поиска</p>
+                                </div>
                             ) : (
-                                searchResults.map(user => renderUserCard(user))
+                                searchResults.map(user => renderUserCard(user, true))
                             )}
-                        </div>
-                    </div>
-                )}
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );
