@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './ChatWindow.css';
 import axios from 'axios';
+import { io as socketIOClient } from 'socket.io-client';
 
 const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [chatId, setChatId] = useState(null);
+    const [isTyping, setIsTyping] = useState(false);
+    const socketRef = useRef(null);
+    const typingTimeoutRef = useRef(null);
 
     // Получение или создание чата
     useEffect(() => {
@@ -42,6 +46,21 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         getOrCreateChat();
     }, [user, chat, currentUser, isPrivateChat]);
 
+    // Инициализация Socket.IO
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const socket = socketRef.current || socketIOClient('http://localhost:3001', {
+            transports: ['websocket'],
+            auth: { userId: currentUser.id }
+        });
+        socketRef.current = socket;
+
+        return () => {
+            // не закрываем сокет при смене чата, только при размонтировании компонента
+        };
+    }, [currentUser]);
+
     // Загрузка сообщений
     useEffect(() => {
         const fetchMessages = async () => {
@@ -63,6 +82,46 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         };
 
         fetchMessages();
+    }, [chatId, currentUser]);
+
+    // Присоединение к комнате чата и обработчики сокета
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!socket || !chatId) return;
+
+        socket.emit('chat:join', chatId);
+
+        const handleNewMessage = (payload) => {
+            if (payload.chat_id !== chatId) return;
+            setMessages(prev => [...prev, payload]);
+        };
+
+        const handleTyping = ({ chatId: id, userId, isTyping: typing }) => {
+            if (id !== chatId || userId === String(currentUser.id)) return;
+            setIsTyping(typing);
+            if (typing) {
+                clearTimeout(typingTimeoutRef.current);
+                typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 2000);
+            }
+        };
+
+        socket.on('message:new', handleNewMessage);
+        socket.on('typing', handleTyping);
+        socket.on('message:read', ({ chatId: id, messageId }) => {
+            if (id !== chatId) return;
+            // помечаем исходящие сообщения как прочитанные до messageId
+            setMessages(prev => prev.map(m => ({
+                ...m,
+                is_read_by_peer: m.user_id === currentUser.id ? (m.id <= messageId) : m.is_read_by_peer
+            })));
+        });
+
+        return () => {
+            socket.emit('chat:leave', chatId);
+            socket.off('message:new', handleNewMessage);
+            socket.off('typing', handleTyping);
+            socket.off('message:read');
+        };
     }, [chatId, currentUser]);
 
     // Отправка нового сообщения
@@ -90,6 +149,18 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
+    };
+
+    // Эмит статуса набора текста
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setNewMessage(value);
+        if (!socketRef.current || !chatId) return;
+        socketRef.current.emit('typing:start', { chatId });
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+            socketRef.current.emit('typing:stop', { chatId });
+        }, 800);
     };
 
     const getDisplayName = () => {
@@ -161,7 +232,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                 <input
                     type="text"
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyPress={handleKeyPress}
                     placeholder="Введите сообщение..."
                     disabled={loading}
@@ -169,6 +240,9 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                 <button onClick={sendMessage} disabled={loading || !newMessage.trim()}>
                     Отправить
                 </button>
+                {isTyping && (
+                    <div className="typing-indicator">Печатает...</div>
+                )}
             </div>
         </div>
     );

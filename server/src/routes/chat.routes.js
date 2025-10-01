@@ -5,7 +5,8 @@ import {
   getOrCreatePrivateChat, 
   getChatMessages, 
   sendMessage, 
-  getUserChats 
+  getUserChats,
+  markChatRead
 } from '../controllers/chat.controller.js';
 
 const router = Router();
@@ -27,5 +28,8 @@ router.get('/:chatId/messages', getChatMessages);
 
 // Отправить сообщение
 router.post('/:chatId/messages', sendMessage);
+
+// Отметить прочитанное до messageId
+router.post('/:chatId/read', markChatRead);
 
 export default router;

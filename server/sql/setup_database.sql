@@ -29,3 +29,8 @@ CREATE TRIGGER update_friends_updated_at BEFORE UPDATE ON friends
 -- Проверка существования таблиц
 SELECT 'Таблица friends создана успешно' as status;
 SELECT COUNT(*) as friends_count FROM friends;
+
+-- Read receipts (минимальная реализация)
+ALTER TABLE chat_members
+  ADD COLUMN IF NOT EXISTS last_read_message_id BIGINT,
+  ADD COLUMN IF NOT EXISTS last_read_at TIMESTAMPTZ;

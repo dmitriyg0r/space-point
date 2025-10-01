@@ -1,4 +1,5 @@
 import pool from '../config/database.js';
+import { io } from '../index.js';
 
 // Получить всех пользователей для чата
 export async function getUsers(req, res) {
@@ -122,9 +123,25 @@ export async function getChatMessages(req, res) {
       LIMIT $2 OFFSET $3
     `, [chatId, limit, offset]);
 
+    // Получаем last_read_message_id собеседника (для приватных чатов) или максимум среди других участников
+    const peerRead = await pool.query(`
+      SELECT cm.last_read_message_id
+      FROM chat_members cm
+      WHERE cm.chat_id = $1 AND cm.user_id != $2
+      ORDER BY cm.last_read_message_id DESC NULLS LAST
+      LIMIT 1
+    `, [chatId, userId]);
+
+    const peerLastReadId = peerRead.rows?.[0]?.last_read_message_id || null;
+    const ordered = messages.rows.reverse();
+    const withRead = ordered.map(m => ({
+      ...m,
+      is_read_by_peer: peerLastReadId ? m.id <= peerLastReadId : false
+    }));
+
     res.json({
       success: true,
-      messages: messages.rows.reverse() // Возвращаем в хронологическом порядке
+      messages: withRead
     });
   } catch (error) {
     console.error('Ошибка получения сообщений:', error);
@@ -132,6 +149,48 @@ export async function getChatMessages(req, res) {
       success: false, 
       message: 'Ошибка при получении сообщений' 
     });
+  }
+}
+
+// Обновить отметку прочтения чата до messageId
+export async function markChatRead(req, res) {
+  const { chatId } = req.params;
+  const userId = req.user.id;
+  const { messageId } = req.body;
+
+  if (!messageId) {
+    return res.status(400).json({ success: false, message: 'messageId обязателен' });
+  }
+
+  try {
+    const memberCheck = await pool.query(`
+      SELECT id, COALESCE(last_read_message_id, 0) as last_read_message_id
+      FROM chat_members 
+      WHERE chat_id = $1 AND user_id = $2 AND left_at IS NULL
+    `, [chatId, userId]);
+
+    if (memberCheck.rows.length === 0) {
+      return res.status(403).json({ success: false, message: 'У вас нет доступа к этому чату' });
+    }
+
+    const currentLast = Number(memberCheck.rows[0].last_read_message_id || 0);
+    const nextVal = Math.max(currentLast, Number(messageId));
+
+    await pool.query(`
+      UPDATE chat_members
+      SET last_read_message_id = $1, last_read_at = CURRENT_TIMESTAMP
+      WHERE chat_id = $2 AND user_id = $3
+    `, [nextVal, chatId, userId]);
+
+    // уведомляем других участников
+    try {
+      io.to(`chat:${chatId}`).emit('message:read', { chatId: Number(chatId), messageId: nextVal, readerId: userId, readAt: new Date().toISOString() });
+    } catch {}
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Ошибка обновления прочтения:', error);
+    res.status(500).json({ success: false, message: 'Ошибка обновления прочтения' });
   }
 }
 
@@ -179,12 +238,24 @@ export async function sendMessage(req, res) {
       WHERE id = $1
     `, [userId]);
 
+    const payload = {
+      ...result.rows[0],
+      user_id: userId,
+      user: userInfo.rows[0],
+      chat_id: Number(chatId)
+    };
+
+    // Рассылаем новое сообщение в комнату чата
+    try {
+      io.to(`chat:${chatId}`).emit('message:new', payload);
+    } catch (emitErr) {
+      // eslint-disable-next-line no-console
+      console.error('Socket emit error:', emitErr);
+    }
+
     res.json({
       success: true,
-      message: {
-        ...result.rows[0],
-        user: userInfo.rows[0]
-      }
+      message: payload
     });
   } catch (error) {
     console.error('Ошибка отправки сообщения:', error);
