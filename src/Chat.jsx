@@ -1,10 +1,10 @@
+// Chat.jsx
 import { useEffect, useState } from "react";
 import './Chat.css'
 import '@fontsource/jura';
 import ChatList from "./components/ChatList";
 import ChatWindow from "./components/ChatWindow";
 import axios from "axios";
-
 
 const Chat = () => {
     const [selectedUser, setSelectedUser] = useState(null);
@@ -16,7 +16,6 @@ const Chat = () => {
     const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
-        // Получаем текущего пользователя из localStorage
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
             const user = JSON.parse(savedUser);
@@ -31,7 +30,6 @@ const Chat = () => {
             try {
                 setLoading(true);
                 
-                // Получаем чаты пользователя
                 const chatsResponse = await axios.get('http://localhost:3001/api/chat/chats', {
                     headers: {
                         'x-user-id': currentUser.id
@@ -39,7 +37,6 @@ const Chat = () => {
                 });
                 setChats(chatsResponse.data.chats);
 
-                // Получаем всех пользователей
                 const usersResponse = await axios.get('http://localhost:3001/api/chat/users', {
                     headers: {
                         'x-user-id': currentUser.id
@@ -70,22 +67,44 @@ const Chat = () => {
 
     if (loading) {
         return (
-            <div className="chat-loading">
-                <h3>Загрузка чатов...</h3>
+            <div className="chat-page">
+                <div className="chat-loading">
+                    <div className="loading-text">[SCANNING] Загрузка коммуникаций...</div>
+                </div>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="chat-error">
-                <h3>{error}</h3>
-                <button onClick={() => window.location.reload()}>Попробовать снова</button>
+            <div className="chat-page">
+                <div className="chat-error">
+                    <div className="error-icon">[ERROR]</div>
+                    <h3>{error}</h3>
+                    <button onClick={() => window.location.reload()}>ПОВТОРИТЬ СКАНИРОВАНИЕ</button>
+                </div>
             </div>
         )
     }
+
     return (
-        <>
+        <div className="chat-page">
+            {/* Floating particles */}
+            <div className="floating-particles">
+                {[...Array(20)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="particle"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 4}s`,
+                            animationDuration: `${2 + Math.random() * 3}s`
+                        }}
+                    />
+                ))}
+            </div>
+
             <ChatList 
                 users={users} 
                 chats={chats}
@@ -93,6 +112,7 @@ const Chat = () => {
                 onChatSelect={handleChatSelect}
                 currentUser={currentUser}
             />
+            
             {selectedUser ? (
                 <ChatWindow 
                     user={selectedUser} 
@@ -106,13 +126,14 @@ const Chat = () => {
                     isPrivateChat={false}
                 />
             ) : (
-                <div className="chat-page-placeholder">
-                    <h3>Выберите чат чтобы начать общение</h3>
+                <div className="chat-placeholder">
+                    <div className="placeholder-icon">[QUANTUM_COMM]</div>
+                    <h3>ВЫБЕРИТЕ КАНАЛ ДЛЯ НАЧАЛА СВЯЗИ</h3>
+                    <p>Система квантовой коммуникации готова к работе</p>
                 </div>
             )}
-        </>
+        </div>
     );
 };
-
 
 export default Chat;

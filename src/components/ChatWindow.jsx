@@ -1,7 +1,9 @@
+// ChatWindow.jsx
 import { useState, useEffect, useRef } from 'react';
 import './ChatWindow.css';
 import axios from 'axios';
 import { io as socketIOClient } from 'socket.io-client';
+import { Send, Satellite, Zap } from 'lucide-react';
 
 const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
     const [messages, setMessages] = useState([]);
@@ -11,6 +13,15 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
     const [isTyping, setIsTyping] = useState(false);
     const socketRef = useRef(null);
     const typingTimeoutRef = useRef(null);
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     // Получение или создание чата
     useEffect(() => {
@@ -22,14 +33,12 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                 let response;
 
                 if (isPrivateChat && user) {
-                    // Создаем или получаем приватный чат
                     response = await axios.get(`http://localhost:3001/api/chat/private/${user.id}`, {
                         headers: {
                             'x-user-id': currentUser.id
                         }
                     });
                 } else if (chat) {
-                    // Используем существующий чат
                     response = { data: { success: true, chat: chat } };
                 }
 
@@ -109,7 +118,6 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         socket.on('typing', handleTyping);
         socket.on('message:read', ({ chatId: id, messageId }) => {
             if (id !== chatId) return;
-            // помечаем исходящие сообщения как прочитанные до messageId
             setMessages(prev => prev.map(m => ({
                 ...m,
                 is_read_by_peer: m.user_id === currentUser.id ? (m.id <= messageId) : m.is_read_by_peer
@@ -137,7 +145,6 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                 }
             });
 
-            // Добавляем новое сообщение в список
             setMessages(prev => [...prev, response.data.message]);
             setNewMessage('');
         } catch (err) {
@@ -151,7 +158,6 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         }
     };
 
-    // Эмит статуса набора текста
     const handleInputChange = (e) => {
         const value = e.target.value;
         setNewMessage(value);
@@ -168,7 +174,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
             return user.name || user.username;
         }
         if (chat) {
-            return chat.title || 'Безымянный чат';
+            return chat.title || 'Квантовый канал';
         }
         return 'Неизвестно';
     };
@@ -197,51 +203,108 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         });
     };
 
+    const getStatusText = () => {
+        if (isOnline()) {
+            return '● ОНЛАЙН';
+        }
+        return '○ ОФФЛАЙН';
+    };
+
     return (
         <div className="chat-window">
+            {/* Header */}
             <div className="chat-window-header">
-                <div className="chat-window-user">
-                    <img src={getAvatar()} alt={getDisplayName()} />
-                    <div>
-                        <h3>{getDisplayName()}</h3>
-                        <span className="user-status">
-                            {isOnline() ? 'online' : 'offline'}
-                        </span>
+                <div className="header-background">
+                    <div className="header-scan-line"></div>
+                    <div className="header-content">
+                        <div className="chat-window-user">
+                            <div className="user-avatar">
+                                <div className="avatar-glow"></div>
+                                <div className="avatar-frame">
+                                    <img src={getAvatar()} alt={getDisplayName()} />
+                                </div>
+                                {isOnline() && <div className="online-indicator"></div>}
+                            </div>
+                            <div className="user-info">
+                                <h3>{getDisplayName()}</h3>
+                                <div className="user-status">
+                                    <span className={`status-text ${isOnline() ? 'online' : 'offline'}`}>
+                                        {getStatusText()}
+                                    </span>
+                                    {isOnline() && (
+                                        <div className="typing-indicator-small">
+                                            {isTyping ? 'ПЕЧАТАЕТ...' : 'ГОТОВ К СВЯЗИ'}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="connection-info">
+                            <Satellite className="connection-icon" />
+                            <span className="connection-text">КВАНТОВАЯ СВЯЗЬ</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Messages */}
             <div className="chat-window-messages">
                 {loading ? (
-                    <div className="messages-loading">Загрузка сообщений...</div>
-                ) : (
-                    messages.map(message => (
-                        <div key={message.id} className={`message ${message.user_id === currentUser?.id ? 'message-own' : 'message-other'}`}>
-                            <div className="message-content">
-                                <p>{message.text}</p>
-                                <span className="message-time">
-                                    {formatMessageTime(message.created_at)}
-                                </span>
-                            </div>
+                    <div className="messages-loading">
+                        <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
-                    ))
+                        <p>[DECRYPTING] Загрузка сообщений...</p>
+                    </div>
+                ) : (
+                    <>
+                        {messages.map(message => (
+                            <div key={message.id} className={`message ${message.user_id === currentUser?.id ? 'message-own' : 'message-other'}`}>
+                                <div className="message-content">
+                                    <p>{message.text}</p>
+                                    <span className="message-time">
+                                        {formatMessageTime(message.created_at)}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </>
                 )}
             </div>
 
+            {/* Input */}
             <div className="chat-window-input">
-                <input
-                    type="text"
-                    value={newMessage}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Введите сообщение..."
-                    disabled={loading}
-                />
-                <button onClick={sendMessage} disabled={loading || !newMessage.trim()}>
-                    Отправить
-                </button>
+                <div className="input-container">
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={handleInputChange}
+                        onKeyPress={handleKeyPress}
+                        placeholder="ВВЕДИТЕ СООБЩЕНИЕ..."
+                        disabled={loading}
+                        className="message-input"
+                    />
+                    <button 
+                        onClick={sendMessage} 
+                        disabled={loading || !newMessage.trim()}
+                        className="send-button"
+                    >
+                        <Send className="send-icon" />
+                        TRANSMIT
+                    </button>
+                </div>
                 {isTyping && (
-                    <div className="typing-indicator">Печатает...</div>
+                    <div className="typing-indicator">
+                        <div className="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span>СОБЫТИЕ НАБОРА ТЕКСТА...</span>
+                    </div>
                 )}
             </div>
         </div>

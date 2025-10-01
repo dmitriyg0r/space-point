@@ -1,5 +1,5 @@
+// ChatItem.jsx
 import { useState } from 'react'
-import * as icons from "svg-by-dreamsoftware/icons-react-dist";
 import './ChatItem.css'
 
 const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
@@ -21,7 +21,7 @@ const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
             return user.name || user.username;
         }
         if (chat) {
-            return chat.title || 'Безымянный чат';
+            return chat.title || 'Новый канал';
         }
         return 'Неизвестно';
     };
@@ -38,10 +38,10 @@ const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
 
     const getLastMessage = () => {
         if (user) {
-            return 'Нажмите чтобы начать общение';
+            return 'Начать квантовую связь';
         }
         if (chat) {
-            return chat.last_message || 'Нет сообщений';
+            return chat.last_message || 'Канал готов к работе';
         }
         return '';
     };
@@ -63,21 +63,43 @@ const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
         return false;
     };
 
+    const getRole = () => {
+        if (user) {
+            return user.role || 'Экипаж';
+        }
+        if (chat) {
+            return chat.type === 'private' ? 'Приватный' : 'Групповой';
+        }
+        return '';
+    };
+
     return (
         <div className={`chat-item ${isSelected ? 'chat-item-selected' : ''}`} onClick={onClick}>
             <div className='chat-item-avatar'>
-                <img src={getAvatar()} alt={getDisplayName()} />
+                <div className="avatar-glow"></div>
+                <div className="avatar-frame">
+                    <img src={getAvatar()} alt={getDisplayName()} />
+                </div>
                 {isOnline() && <span className='chat-item-online-dot'></span>}
             </div>
+            
             <div className='chat-item-content'>
                 <div className='chat-item-header'>
                     <h3 className='chat-item-name'>{getDisplayName()}</h3>
                     <span className='chat-item-time'>{getLastMessageTime()}</span>
                 </div>
+                
+                <div className='chat-item-info'>
+                    <span className='chat-item-role'>{getRole()}</span>
+                </div>
+                
                 <div className='chat-item-message'>
                     <p>{getLastMessage()}</p>
                 </div>
             </div>
+
+            {/* Selection glow effect */}
+            {isSelected && <div className="selection-glow"></div>}
         </div>
     );
 };
