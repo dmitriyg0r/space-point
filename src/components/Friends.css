@@ -1,8 +1,8 @@
 /* Friends.css */
 .crew-page {
     min-height: 100vh;
+    min-width: calc(100% - 320px);
     position: relative;
-    background: #0f172a;
     color: white;
 }
 
