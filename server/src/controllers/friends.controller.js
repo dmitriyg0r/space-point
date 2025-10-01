@@ -6,6 +6,7 @@ export async function getFriends(req, res) {
   const { status = 'accepted' } = req.query;
 
   try {
+    // Симметричная выборка: учитываем обе стороны связи (user_id -> friend_id и friend_id -> user_id)
     const friends = await pool.query(`
       SELECT 
         f.id,
@@ -18,9 +19,23 @@ export async function getFriends(req, res) {
         u.is_online,
         u.lastlogin_at
       FROM friends f
-      INNER JOIN users u ON f.friend_id = u.id
+      INNER JOIN users u ON u.id = f.friend_id
       WHERE f.user_id = $1 AND f.status = $2
-      ORDER BY u.is_online DESC, u.name ASC
+      UNION ALL
+      SELECT 
+        f.id,
+        f.status,
+        f.created_at,
+        u.id as friend_id,
+        u.name,
+        u.username,
+        u.user_avatar,
+        u.is_online,
+        u.lastlogin_at
+      FROM friends f
+      INNER JOIN users u ON u.id = f.user_id
+      WHERE f.friend_id = $1 AND f.status = $2
+      ORDER BY is_online DESC, name ASC
     `, [userId, status]);
 
     res.json({
@@ -51,7 +66,7 @@ export async function sendFriendRequest(req, res) {
   try {
     // Проверяем, существует ли уже запрос
     const existingRequest = await pool.query(`
-      SELECT id, status FROM friends 
+      SELECT id, status, user_id, friend_id FROM friends 
       WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)
     `, [userId, friendId]);
 
@@ -72,6 +87,12 @@ export async function sendFriendRequest(req, res) {
           success: false, 
           message: 'Пользователь заблокирован' 
         });
+      } else if (request.status === 'rejected') {
+        // Разрешаем отправить новый запрос: удалим старую запись (любого направления) и создадим новую
+        await pool.query(`
+          DELETE FROM friends 
+          WHERE id = $1
+        `, [request.id]);
       }
     }
 
@@ -147,7 +168,8 @@ export async function rejectFriendRequest(req, res) {
 
   try {
     const result = await pool.query(`
-      DELETE FROM friends 
+      UPDATE friends
+      SET status = 'rejected', updated_at = CURRENT_TIMESTAMP
       WHERE user_id = $1 AND friend_id = $2 AND status = 'pending'
     `, [friendId, userId]);
 
