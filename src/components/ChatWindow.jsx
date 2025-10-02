@@ -23,6 +23,26 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Проверка доступности сервера
+    const checkServerAvailability = async () => {
+        try {
+            console.log('Checking server availability...');
+            const response = await fetch('http://localhost:3001/api/test', { 
+                method: 'GET',
+                timeout: 5000 
+            });
+            console.log('Server health check:', response.ok ? 'OK' : 'Failed');
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Server response:', data.message);
+            }
+            return response.ok;
+        } catch (error) {
+            console.log('Server health check failed:', error.message);
+            return false;
+        }
+    };
+
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
@@ -60,19 +80,40 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
     }, [user, chat, currentUser, isPrivateChat]);
 
     // Инициализация Socket.IO с обработкой переподключения
-    const initializeSocket = useCallback(() => {
-        if (!currentUser || !networkOnline) return;
+    const initializeSocket = useCallback(async () => {
+        if (!currentUser || !networkOnline) {
+            console.log('Cannot initialize socket: missing requirements', {
+                hasCurrentUser: !!currentUser,
+                networkOnline
+            });
+            return;
+        }
+
+        // Проверяем доступность сервера перед подключением
+        const serverAvailable = await checkServerAvailability();
+        if (!serverAvailable) {
+            setError('Сервер недоступен. Убедитесь, что сервер запущен: npm start в папке server');
+            setConnectionStatus('error');
+            return;
+        }
 
         try {
+            console.log('Initializing WebSocket connection...');
             const socket = socketIOClient('http://localhost:3001', {
-                transports: ['websocket'],
+                transports: ['websocket', 'polling'], // Добавляем fallback на polling
                 auth: { userId: currentUser.id },
                 timeout: 10000,
-                forceNew: false
+                forceNew: false,
+                autoConnect: true,
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5,
+                withCredentials: false // Для CORS
             });
 
             socket.on('connect', () => {
-                console.log('WebSocket connected successfully');
+                console.log('WebSocket connected successfully via:', socket.io.engine.transport.name);
+                console.log('Socket ID:', socket.id);
                 setConnectionStatus('connected');
                 setError(null);
                 setRetryCount(0);
@@ -89,12 +130,14 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
 
             socket.on('connect_error', (error) => {
                 console.log('WebSocket connection error:', error);
+                console.log('Error details:', error.message, error.description, error.context);
                 setConnectionStatus('error');
                 setError('Ошибка подключения к серверу');
                 
                 // Автоматическое переподключение с экспоненциальной задержкой
                 if (retryCount < 5) {
                     const delay = Math.pow(2, retryCount) * 1000;
+                    console.log(`Retrying connection in ${delay}ms (attempt ${retryCount + 1}/5)`);
                     reconnectTimeoutRef.current = setTimeout(() => {
                         setRetryCount(prev => prev + 1);
                         socket.connect();
@@ -102,11 +145,43 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
                 }
             });
 
+            // Отслеживание смены транспорта
+            socket.io.on('upgrade', () => {
+                console.log('Transport upgraded to:', socket.io.engine.transport.name);
+            });
+
+            socket.io.on('upgradeError', (error) => {
+                console.log('Transport upgrade error:', error);
+            });
+
             socketRef.current = socket;
             return socket;
         } catch (error) {
+            console.log('Socket initialization error:', error);
             setError('Не удалось инициализировать соединение');
             setConnectionStatus('error');
+            
+            // Попробуем подключиться только через polling как fallback
+            try {
+                console.log('Trying fallback connection with polling only...');
+                const fallbackSocket = socketIOClient('http://localhost:3001', {
+                    transports: ['polling'], // Только polling
+                    auth: { userId: currentUser.id },
+                    timeout: 15000,
+                    forceNew: true
+                });
+                
+                fallbackSocket.on('connect', () => {
+                    console.log('Fallback connection successful via polling');
+                    setConnectionStatus('connected');
+                    setError(null);
+                    setRetryCount(0);
+                });
+                
+                socketRef.current = fallbackSocket;
+            } catch (fallbackError) {
+                console.log('Fallback connection also failed:', fallbackError);
+            }
         }
     }, [currentUser, networkOnline, retryCount]);
 
