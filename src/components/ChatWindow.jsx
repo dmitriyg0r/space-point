@@ -249,19 +249,30 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
 
     const getConnectionIcon = () => {
         switch (connectionStatus) {
-            case 'connected': return <Wifi className="connection-icon connected" />;
-            case 'connecting': return <Satellite className="connection-icon connecting" />;
-            case 'error': return <AlertCircle className="connection-icon error" />;
-            default: return <WifiOff className="connection-icon disconnected" />;
+            case 'connected':
+                return <Wifi className="connection-icon" />;
+            case 'connecting':
+                return <Satellite className="connection-icon rotating" />;
+            case 'disconnected':
+            case 'error':
+                return <WifiOff className="connection-icon" />;
+            default:
+                return <Satellite className="connection-icon" />;
         }
     };
 
     const getConnectionText = () => {
         switch (connectionStatus) {
-            case 'connected': return 'QUANTUM_LINK_ACTIVE';
-            case 'connecting': return 'ESTABLISHING_LINK...';
-            case 'error': return 'LINK_ERROR';
-            default: return 'LINK_OFFLINE';
+            case 'connected':
+                return 'КВАНТОВАЯ СВЯЗЬ АКТИВНА';
+            case 'connecting':
+                return 'ПОДКЛЮЧЕНИЕ...';
+            case 'disconnected':
+                return 'СОЕДИНЕНИЕ ПОТЕРЯНО';
+            case 'error':
+                return 'ОШИБКА СОЕДИНЕНИЯ';
+            default:
+                return 'КВАНТОВАЯ СВЯЗЬ';
         }
     };
 
@@ -270,89 +281,82 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
 
     return (
         <div className="chat-window">
-            <div className="chat-header">
-                <div className="header-background"></div>
-                <div className="header-content">
-                    <div className="chat-info">
-                        <div className="chat-avatar">
-                            {isPrivateChat ? (
-                                user?.user_avatar ? (
-                                    <img src={user.user_avatar} alt={user.name} />
-                                ) : (
-                                    <div className="avatar-placeholder">{user?.name?.[0]?.toUpperCase()}</div>
-                                )
-                            ) : (
-                                <div className="group-avatar">#</div>
-                            )}
-                        </div>
-                        <div className="chat-details">
-                            <h3 className="chat-title">{chatTitle}</h3>
-                            <div className="chat-status">
-                                {isPrivateChat && (
-                                    <span className={`status-indicator ${isOnline ? 'online' : 'offline'}`}>
-                                        {isOnline ? 'В сети' : 'Не в сети'}
+            <div className="chat-window-header">
+                <div className="header-background">
+                    <div className="header-scan-line"></div>
+                    <div className="header-content">
+                        <div className="chat-window-user">
+                            <div className="user-avatar">
+                                <div className="avatar-glow"></div>
+                                <div className="avatar-frame">
+                                    {isPrivateChat ? (
+                                        user?.user_avatar ? (
+                                            <img src={user.user_avatar} alt={user.name} />
+                                        ) : (
+                                            <div className="avatar-placeholder">{user?.name?.[0]?.toUpperCase()}</div>
+                                        )
+                                    ) : (
+                                        <div className="group-avatar">#</div>
+                                    )}
+                                </div>
+                                {isOnline && <div className="online-indicator"></div>}
+                            </div>
+                            <div className="user-info">
+                                <h3>{chatTitle}</h3>
+                                <div className="user-status">
+                                    <span className={`status-text ${isOnline ? 'online' : 'offline'}`}>
+                                        {isOnline ? '● ОНЛАЙН' : '○ ОФФЛАЙН'}
                                     </span>
-                                )}
-                                {isTyping && <span className="typing-indicator">печатает...</span>}
+                                    {isTyping && (
+                                        <div className="typing-indicator-small">
+                                            ПЕЧАТАЕТ...
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="connection-status">
-                        {getConnectionIcon()}
-                        <span className="connection-text">{getConnectionText()}</span>
+                        <div className={`connection-info ${connectionStatus}`}>
+                            {getConnectionIcon()}
+                            <span className="connection-text">{getConnectionText()}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="messages-container">
+            <div className="chat-window-messages">
                 {loading ? (
-                    <div className="loading-messages">
-                        <div className="loading-spinner"></div>
-                        <span>Загрузка сообщений...</span>
-                    </div>
-                ) : error ? (
-                    <div className="error-messages">
-                        <AlertCircle className="error-icon" />
-                        <span>{error}</span>
-                    </div>
-                ) : messages.length === 0 ? (
-                    <div className="empty-messages">
-                        <Zap className="empty-icon" />
-                        <span>Начните общение</span>
+                    <div className="messages-loading">
+                        <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <p>[DECRYPTING] Загрузка сообщений...</p>
                     </div>
                 ) : (
-                    <div className="messages-list">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`message ${message.user_id === currentUser.id ? 'message-own' : 'message-other'}`}
-                            >
+                    <>
+                        {messages.map(message => (
+                            <div key={message.id} className={`message ${message.user_id === currentUser?.id ? 'message-own' : 'message-other'}`}>
                                 <div className="message-content">
-                                    <div className="message-text">{message.text}</div>
-                                    <div className="message-meta">
-                                        <span className="message-time">
-                                            {new Date(message.created_at).toLocaleTimeString('ru-RU', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </span>
-                                        {message.user_id === currentUser.id && (
-                                            <span className={`message-status ${message.is_read_by_peer ? 'read' : 'sent'}`}>
-                                                {message.is_read_by_peer ? '✓✓' : '✓'}
-                                            </span>
-                                        )}
-                                    </div>
+                                    <p>{message.text}</p>
+                                    <span className="message-time">
+                                        {new Date(message.created_at).toLocaleTimeString('ru-RU', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </span>
                                 </div>
                             </div>
                         ))}
                         <div ref={messagesEndRef} />
-                    </div>
+                    </>
                 )}
             </div>
 
             <div className="chat-window-input">
                 <div className="input-container">
-                    <textarea
+                    <input
+                        type="text"
                         value={newMessage}
                         onChange={(e) => {
                             setNewMessage(e.target.value);
@@ -363,17 +367,17 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
                             }
                         }}
                         onKeyPress={handleKeyPress}
-                        placeholder="Введите сообщение..."
-                        className="message-input"
-                        rows="1"
-                        disabled={connectionStatus !== 'connected'}
+                        placeholder={networkOnline ? "ВВЕДИТЕ СООБЩЕНИЕ..." : "СОЕДИНЕНИЕ ПОТЕРЯНО..."}
+                        disabled={loading || !networkOnline || connectionStatus !== 'connected'}
+                        className={`message-input ${!networkOnline ? 'disabled' : ''}`}
                     />
-                    <button
-                        onClick={sendMessage}
-                        disabled={!messageText || connectionStatus !== 'connected'}
-                        className="send-button"
+                    <button 
+                        onClick={sendMessage} 
+                        disabled={loading || !messageText || !networkOnline || connectionStatus !== 'connected'}
+                        className={`send-button ${(!networkOnline || connectionStatus !== 'connected') ? 'disabled' : ''}`}
                     >
                         <Send className="send-icon" />
+                        TRANSMIT
                     </button>
                 </div>
             </div>
