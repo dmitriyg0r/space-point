@@ -19,20 +19,34 @@ export const io = new SocketIOServer(server, {
 io.on('connection', (socket) => {
   // Аутентификация по заголовку/параметру
   const userId = socket.handshake.auth?.userId || socket.handshake.headers['x-user-id'];
+  console.log(`🔌 New WebSocket connection attempt. User ID: ${userId}, Socket ID: ${socket.id}`);
+  
   if (!userId) {
+    console.log('❌ WebSocket connection rejected: no user ID');
     socket.disconnect(true);
     return;
   }
 
   socket.data.userId = String(userId);
+  console.log(`✅ WebSocket connection established for user ${userId}`);
 
   // Присоединение к комнатам чатов
   socket.on('chat:join', (chatId) => {
-    if (chatId) socket.join(`chat:${chatId}`);
+    if (chatId) {
+      socket.join(`chat:${chatId}`);
+      console.log(`👥 User ${userId} joined chat room: chat:${chatId}`);
+      
+      // Проверяем сколько пользователей в комнате
+      const roomSize = io.sockets.adapter.rooms.get(`chat:${chatId}`)?.size || 0;
+      console.log(`📊 Room chat:${chatId} now has ${roomSize} users`);
+    }
   });
 
   socket.on('chat:leave', (chatId) => {
-    if (chatId) socket.leave(`chat:${chatId}`);
+    if (chatId) {
+      socket.leave(`chat:${chatId}`);
+      console.log(`👋 User ${userId} left chat room: chat:${chatId}`);
+    }
   });
 
   // Индикатор набора текста
@@ -50,6 +64,11 @@ io.on('connection', (socket) => {
   socket.on('message:read', ({ chatId, messageId }) => {
     if (!chatId || !messageId) return;
     socket.to(`chat:${chatId}`).emit('message:read', { chatId, messageId, readerId: socket.data.userId, readAt: new Date().toISOString() });
+  });
+
+  // Обработка отключения
+  socket.on('disconnect', (reason) => {
+    console.log(`🔌 User ${userId} disconnected: ${reason}`);
   });
 });
 

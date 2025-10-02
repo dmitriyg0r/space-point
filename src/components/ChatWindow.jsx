@@ -231,6 +231,10 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
 
         console.log('Joining chat room:', chatId);
         socket.emit('chat:join', chatId);
+        
+        // Добавляем проверку состояния сокета
+        console.log('Socket connected:', socket.connected);
+        console.log('Socket ID:', socket.id);
 
         const handleNewMessage = (payload) => {
             console.log('Received new message via WebSocket:', payload);
@@ -278,6 +282,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         });
 
         return () => {
+            console.log('Cleaning up chat room listeners for:', chatId);
             socket.emit('chat:leave', chatId);
             socket.off('message:new', handleNewMessage);
             socket.off('typing', handleTyping);

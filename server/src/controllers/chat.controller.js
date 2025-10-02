@@ -247,10 +247,21 @@ export async function sendMessage(req, res) {
 
     // Рассылаем новое сообщение в комнату чата
     try {
+      console.log(`📤 Sending message to room chat:${chatId}:`, payload);
+      
+      // Проверяем сколько пользователей в комнате
+      const roomSize = io.sockets.adapter.rooms.get(`chat:${chatId}`)?.size || 0;
+      console.log(`📊 Room chat:${chatId} has ${roomSize} users`);
+      
+      if (roomSize === 0) {
+        console.log('⚠️ Warning: No users in chat room!');
+      }
+      
       io.to(`chat:${chatId}`).emit('message:new', payload);
+      console.log(`✅ Message emitted to room chat:${chatId}`);
     } catch (emitErr) {
       // eslint-disable-next-line no-console
-      console.error('Socket emit error:', emitErr);
+      console.error('❌ Socket emit error:', emitErr);
     }
 
     res.json({
