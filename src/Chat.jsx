@@ -14,7 +14,6 @@ const Chat = ({ currentUser, socket }) => {
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentUser, setCurrentUser] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [showStatusBar, setShowStatusBar] = useState(false);
@@ -73,18 +72,7 @@ const Chat = ({ currentUser, socket }) => {
         };
     }, [currentUser, retryCount, isOnline, statusBarTimeout]);
 
-    useEffect(() => {
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            try {
-                const user = JSON.parse(savedUser);
-                setCurrentUser(user);
-            } catch (err) {
-                console.error('Ошибка при парсинге пользователя:', err);
-                localStorage.removeItem('currentUser');
-            }
-        }
-    }, []);
+    // currentUser теперь приходит как prop из App.jsx
 
     // Функция загрузки данных с повторными попытками
     const fetchData = useCallback(async () => {
@@ -118,8 +106,7 @@ const Chat = ({ currentUser, socket }) => {
                 setError('Ошибка сервера. Повторная попытка...');
             } else if (err.response?.status === 401) {
                 setError('Ошибка авторизации');
-                localStorage.removeItem('currentUser');
-                setCurrentUser(null);
+                // Авторизация управляется в App.jsx
                 return;
             } else {
                 setError('Ошибка при загрузке данных');
