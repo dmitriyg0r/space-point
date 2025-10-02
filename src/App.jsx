@@ -64,24 +64,33 @@ function App() {
     localStorage.removeItem('currentUser');
   };
 
-  // Глобальное WebSocket соединение для отслеживания статуса
+  // Единое WebSocket соединение для всего приложения
   useEffect(() => {
     if (currentUser && isAuthenticated && !statusSocketRef.current) {
-      console.log('🌐 Initializing global status socket for user:', currentUser.id);
+      console.log('🌐 Initializing global WebSocket for user:', currentUser.id);
       
       const socket = socketIOClient(SERVER_URL, {
         transports: ['websocket', 'polling'],
         auth: { userId: currentUser.id },
         timeout: 10000,
-        forceNew: false
+        forceNew: false,
+        autoConnect: true,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
+        withCredentials: false
       });
 
       socket.on('connect', () => {
-        console.log('📡 Global status socket connected');
+        console.log('📡 Global WebSocket connected, Socket ID:', socket.id);
       });
 
       socket.on('disconnect', (reason) => {
-        console.log('📡 Global status socket disconnected:', reason);
+        console.log('📡 Global WebSocket disconnected:', reason);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('📡 Global WebSocket connection error:', error);
       });
 
       // Обработчик изменения статуса других пользователей
@@ -154,7 +163,7 @@ function App() {
         <Routes>
           <Route path="/" element={<UserProfile currentUser={currentUser} />} />
           <Route path="/profile" element={<UserProfile currentUser={currentUser} />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat" element={<Chat currentUser={currentUser} socket={statusSocketRef.current} />} />
           <Route path="/friends" element={<Friends currentUser={currentUser} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

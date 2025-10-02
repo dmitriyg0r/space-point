@@ -10,8 +10,9 @@ const server = http.createServer(app);
 // Функции для управления онлайн статусом
 const updateUserOnlineStatus = async (userId, isOnline) => {
   try {
+    // Используем lastlogin_at вместо last_seen (колонка существует)
     await pool.query(
-      'UPDATE users SET is_online = $1, last_seen = CURRENT_TIMESTAMP WHERE id = $2',
+      'UPDATE users SET is_online = $1, lastlogin_at = CURRENT_TIMESTAMP WHERE id = $2',
       [isOnline, userId]
     );
     console.log(`📱 User ${userId} status updated: ${isOnline ? 'ONLINE' : 'OFFLINE'}`);

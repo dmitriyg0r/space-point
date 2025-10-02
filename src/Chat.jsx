@@ -7,7 +7,7 @@ import ChatWindow from "./components/ChatWindow";
 import axios from "axios";
 import { SERVER_URL } from './config.js';
 
-const Chat = () => {
+const Chat = ({ currentUser, socket }) => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedChat, setSelectedChat] = useState(null);
     const [users, setUsers] = useState([]);
@@ -255,6 +255,7 @@ const Chat = () => {
                     currentUser={currentUser}
                     isPrivateChat={true}
                     networkOnline={isOnline}
+                    socket={socket}
                 />
             ) : selectedChat ? (
                 <ChatWindow 
@@ -262,6 +263,7 @@ const Chat = () => {
                     currentUser={currentUser}
                     isPrivateChat={false}
                     networkOnline={isOnline}
+                    socket={socket}
                 />
             ) : (
                 <div className="chat-placeholder">
