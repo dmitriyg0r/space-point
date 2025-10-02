@@ -9,7 +9,14 @@ const server = http.createServer(app);
 // Socket.IO
 export const io = new SocketIOServer(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [
+      'http://localhost:5173', 
+      'http://127.0.0.1:5173',
+      'http://172.20.10.4:5173', // Ваш IP адрес
+      /^http:\/\/172\.20\.10\.\d+:5173$/, // Разрешить любой IP в сети 172.20.10.x
+      /^http:\/\/192\.168\.\d+\.\d+:5173$/, // Разрешить сеть 192.168.x.x
+      /^http:\/\/10\.\d+\.\d+\.\d+:5173$/ // Разрешить сеть 10.x.x.x
+    ],
     methods: ['GET', 'POST'],
     allowedHeaders: ['x-user-id', 'content-type', 'authorization', 'x-requested-with', 'accept', 'origin'],
     credentials: true
@@ -72,13 +79,14 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(60));
   console.log('🌐 СЕРВЕР ЗАПУЩЕН');
   console.log('='.repeat(60));
   console.log(`📍 Порт: ${PORT}`);
-  console.log(`🔗 Тест: http://localhost:${PORT}/api/test`);
-  console.log(`🔗 Регистрация: http://localhost:${PORT}/api/auth/register`);
+  console.log(`🔗 Локально: http://localhost:${PORT}/api/test`);
+  console.log(`🔗 По сети: http://172.20.10.4:${PORT}/api/test`);
+  console.log(`🔗 Регистрация: http://172.20.10.4:${PORT}/api/auth/register`);
   console.log('='.repeat(60));
 });
 

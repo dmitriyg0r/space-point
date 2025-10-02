@@ -4,6 +4,7 @@ import './ChatWindow.css';
 import axios from 'axios';
 import { io as socketIOClient } from 'socket.io-client';
 import { Send, Satellite, Zap, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { SERVER_URL } from '../config.js';
 
 const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) => {
     const [messages, setMessages] = useState([]);
@@ -27,7 +28,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
     const checkServerAvailability = async () => {
         try {
             console.log('Checking server availability...');
-            const response = await fetch('http://localhost:3001/api/test', { 
+            const response = await fetch(`${SERVER_URL}/api/test`, { 
                 method: 'GET',
                 timeout: 5000 
             });
@@ -57,7 +58,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
                 let response;
 
                 if (isPrivateChat && user) {
-                    response = await axios.get(`http://localhost:3001/api/chat/private/${user.id}`, {
+                    response = await axios.get(`${SERVER_URL}/api/chat/private/${user.id}`, {
                         headers: {
                             'x-user-id': currentUser.id
                         }
@@ -99,7 +100,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
 
         try {
             console.log('Initializing WebSocket connection...');
-            const socket = socketIOClient('http://localhost:3001', {
+            const socket = socketIOClient(SERVER_URL, {
                 transports: ['websocket', 'polling'], // Добавляем fallback на polling
                 auth: { userId: currentUser.id },
                 timeout: 10000,
@@ -164,7 +165,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
             // Попробуем подключиться только через polling как fallback
             try {
                 console.log('Trying fallback connection with polling only...');
-                const fallbackSocket = socketIOClient('http://localhost:3001', {
+                const fallbackSocket = socketIOClient(SERVER_URL, {
                     transports: ['polling'], // Только polling
                     auth: { userId: currentUser.id },
                     timeout: 15000,
@@ -208,7 +209,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
 
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3001/api/chat/${chatId}/messages`, {
+                const response = await axios.get(`${SERVER_URL}/api/chat/${chatId}/messages`, {
                     headers: {
                         'x-user-id': currentUser.id
                     }
@@ -306,7 +307,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         setNewMessage(''); // Очищаем поле ввода сразу
 
         try {
-            const response = await axios.post(`http://localhost:3001/api/chat/${chatId}/messages`, {
+            const response = await axios.post(`${SERVER_URL}/api/chat/${chatId}/messages`, {
                 text: messageText
             }, {
                 headers: {

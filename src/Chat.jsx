@@ -5,6 +5,7 @@ import '@fontsource/jura';
 import ChatList from "./components/ChatList";
 import ChatWindow from "./components/ChatWindow";
 import axios from "axios";
+import { SERVER_URL } from './config.js';
 
 const Chat = () => {
     const [selectedUser, setSelectedUser] = useState(null);
@@ -94,11 +95,11 @@ const Chat = () => {
             setError(null);
             
             const [chatsResponse, usersResponse] = await Promise.all([
-                axios.get('http://localhost:3001/api/chat/chats', {
+                axios.get(`${SERVER_URL}/api/chat/chats`, {
                     headers: { 'x-user-id': currentUser.id },
                     timeout: 10000
                 }),
-                axios.get('http://localhost:3001/api/chat/users', {
+                axios.get(`${SERVER_URL}/api/chat/users`, {
                     headers: { 'x-user-id': currentUser.id },
                     timeout: 10000
                 })
