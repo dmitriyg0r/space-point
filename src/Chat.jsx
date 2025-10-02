@@ -137,6 +137,7 @@ const Chat = () => {
         }
     }, [currentUser, isOnline, retryCount]);
 
+
     useEffect(() => {
         if (currentUser) {
             fetchData();

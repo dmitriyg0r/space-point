@@ -120,6 +120,8 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
                 setRetryCount(0);
             });
 
+            // Примечание: обработка статуса пользователей теперь в App.jsx
+
             socket.on('disconnect', (reason) => {
                 console.log('WebSocket disconnected:', reason);
                 setConnectionStatus('disconnected');

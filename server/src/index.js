@@ -1,10 +1,29 @@
 import app from './app.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import pool from './config/database.js';
 
 const PORT = process.env.PORT || 3001;
 
 const server = http.createServer(app);
+
+// Функции для управления онлайн статусом
+const updateUserOnlineStatus = async (userId, isOnline) => {
+  try {
+    await pool.query(
+      'UPDATE users SET is_online = $1, last_seen = CURRENT_TIMESTAMP WHERE id = $2',
+      [isOnline, userId]
+    );
+    console.log(`📱 User ${userId} status updated: ${isOnline ? 'ONLINE' : 'OFFLINE'}`);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+  }
+};
+
+const broadcastUserStatusChange = (userId, isOnline) => {
+  io.emit('user:status', { userId, isOnline, timestamp: new Date().toISOString() });
+  console.log(`📡 Broadcasting status change: User ${userId} is ${isOnline ? 'ONLINE' : 'OFFLINE'}`);
+};
 
 // Socket.IO
 export const io = new SocketIOServer(server, {
@@ -36,6 +55,10 @@ io.on('connection', (socket) => {
 
   socket.data.userId = String(userId);
   console.log(`✅ WebSocket connection established for user ${userId}`);
+  
+  // Обновляем статус пользователя на "онлайн"
+  updateUserOnlineStatus(userId, true);
+  broadcastUserStatusChange(userId, true);
 
   // Присоединение к комнатам чатов
   socket.on('chat:join', (chatId) => {
@@ -85,9 +108,20 @@ io.on('connection', (socket) => {
     socket.to(`chat:${chatId}`).emit('message:read', { chatId, messageId, readerId: socket.data.userId, readAt: new Date().toISOString() });
   });
 
+  // Обработчик явного ухода пользователя
+  socket.on('user:leaving', () => {
+    console.log(`👋 User ${userId} is leaving (beforeunload)`);
+    updateUserOnlineStatus(userId, false);
+    broadcastUserStatusChange(userId, false);
+  });
+
   // Обработка отключения
   socket.on('disconnect', (reason) => {
     console.log(`🔌 User ${userId} disconnected: ${reason}`);
+    
+    // Обновляем статус пользователя на "оффлайн"
+    updateUserOnlineStatus(userId, false);
+    broadcastUserStatusChange(userId, false);
   });
 });
 

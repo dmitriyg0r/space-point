@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import '@fontsource/jura';
 import './App.css'
@@ -8,6 +8,8 @@ import Regcont from './components/Regcont';
 import Starfield from './components/Starfield'; // Импортируем компонент звезд
 import Chat from './Chat';
 import Friends from './components/Friends';
+import { SERVER_URL } from './config.js';
+import { io as socketIOClient } from 'socket.io-client';
 
 // Глобальная функция для входа (временное решение)
 window.handleGlobalLogin = null;
@@ -15,6 +17,7 @@ window.handleGlobalLogin = null;
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const statusSocketRef = useRef(null);
 
   console.log('App render - isAuthenticated:', isAuthenticated, 'currentUser:', currentUser);
 
@@ -50,10 +53,84 @@ function App() {
 
   // Функция для выхода из системы
   const handleLogout = () => {
+    // Отключаем WebSocket перед выходом
+    if (statusSocketRef.current) {
+      statusSocketRef.current.disconnect();
+      statusSocketRef.current = null;
+    }
+    
     setCurrentUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('currentUser');
   };
+
+  // Глобальное WebSocket соединение для отслеживания статуса
+  useEffect(() => {
+    if (currentUser && isAuthenticated && !statusSocketRef.current) {
+      console.log('🌐 Initializing global status socket for user:', currentUser.id);
+      
+      const socket = socketIOClient(SERVER_URL, {
+        transports: ['websocket', 'polling'],
+        auth: { userId: currentUser.id },
+        timeout: 10000,
+        forceNew: false
+      });
+
+      socket.on('connect', () => {
+        console.log('📡 Global status socket connected');
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('📡 Global status socket disconnected:', reason);
+      });
+
+      // Обработчик изменения статуса других пользователей
+      socket.on('user:status', ({ userId, isOnline, timestamp }) => {
+        console.log(`👤 User ${userId} status changed: ${isOnline ? 'ONLINE' : 'OFFLINE'}`);
+        // Здесь можно добавить глобальное обновление статусов если нужно
+      });
+
+      statusSocketRef.current = socket;
+    }
+
+    return () => {
+      if (!isAuthenticated && statusSocketRef.current) {
+        statusSocketRef.current.disconnect();
+        statusSocketRef.current = null;
+      }
+    };
+  }, [currentUser, isAuthenticated]);
+
+  // Обработчик закрытия страницы/вкладки
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (statusSocketRef.current) {
+        // Отправляем событие о том, что пользователь уходит
+        statusSocketRef.current.emit('user:leaving');
+        statusSocketRef.current.disconnect();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (statusSocketRef.current) {
+        if (document.hidden) {
+          // Пользователь переключился на другую вкладку
+          console.log('👁️ User switched to another tab');
+        } else {
+          // Пользователь вернулся на вкладку
+          console.log('👁️ User returned to tab');
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Если пользователь не аутентифицирован, показываем форму входа/регистрации
   if (!isAuthenticated) {
