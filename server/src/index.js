@@ -39,14 +39,26 @@ io.on('connection', (socket) => {
 
   // Присоединение к комнатам чатов
   socket.on('chat:join', (chatId) => {
-    if (chatId) {
-      socket.join(`chat:${chatId}`);
-      console.log(`👥 User ${userId} joined chat room: chat:${chatId}`);
-      
-      // Проверяем сколько пользователей в комнате
-      const roomSize = io.sockets.adapter.rooms.get(`chat:${chatId}`)?.size || 0;
-      console.log(`📊 Room chat:${chatId} now has ${roomSize} users`);
+    console.log(`🔄 User ${userId} attempting to join chat:${chatId}`);
+    
+    if (!chatId) {
+      console.log(`❌ No chatId provided for user ${userId}`);
+      return;
     }
+    
+    // Проверяем текущие комнаты пользователя
+    console.log(`📍 User ${userId} current rooms:`, Array.from(socket.rooms));
+    
+    socket.join(`chat:${chatId}`);
+    console.log(`✅ User ${userId} joined chat room: chat:${chatId}`);
+    
+    // Проверяем сколько пользователей в комнате
+    const roomSize = io.sockets.adapter.rooms.get(`chat:${chatId}`)?.size || 0;
+    console.log(`📊 Room chat:${chatId} now has ${roomSize} users`);
+    
+    // Показываем всех пользователей в комнате
+    const roomUsers = Array.from(io.sockets.adapter.rooms.get(`chat:${chatId}`) || []);
+    console.log(`👥 Users in room chat:${chatId}:`, roomUsers);
   });
 
   socket.on('chat:leave', (chatId) => {

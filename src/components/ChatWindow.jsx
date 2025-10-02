@@ -187,7 +187,8 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
     }, [currentUser, networkOnline, retryCount]);
 
     useEffect(() => {
-        if (currentUser && networkOnline) {
+        if (currentUser && networkOnline && !socketRef.current) {
+            console.log('Initializing socket for user:', currentUser.id);
             initializeSocket();
         }
 
@@ -196,11 +197,12 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
                 clearTimeout(reconnectTimeoutRef.current);
             }
             if (socketRef.current) {
+                console.log('Cleaning up socket connection');
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
         };
-    }, [initializeSocket]);
+    }, [currentUser, networkOnline]); // Убираем initializeSocket из зависимостей
 
     // Загрузка сообщений
     useEffect(() => {
@@ -230,41 +232,48 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         const socket = socketRef.current;
         if (!socket || !chatId) return;
 
-        console.log('Joining chat room:', chatId);
-        socket.emit('chat:join', chatId);
+        console.log('🏠 Joining chat room:', chatId);
+        console.log('👤 User joining:', currentUser?.id, currentUser?.name);
+        console.log('🔌 Socket connected:', socket.connected);
+        console.log('🆔 Socket ID:', socket.id);
         
-        // Добавляем проверку состояния сокета
-        console.log('Socket connected:', socket.connected);
-        console.log('Socket ID:', socket.id);
+        socket.emit('chat:join', chatId);
 
         const handleNewMessage = (payload) => {
-            console.log('Received new message via WebSocket:', payload);
+            console.log('🔔 Received new message via WebSocket:', payload);
+            console.log('📍 Current chat ID:', chatId, 'Message chat ID:', payload.chat_id);
+            console.log('👤 Current user ID:', currentUser?.id, 'Message user ID:', payload.user_id);
             
             // Проверяем корректность данных
             if (!payload || !payload.id || !payload.text) {
-                console.log('Invalid message payload, ignoring');
+                console.log('❌ Invalid message payload, ignoring');
                 return;
             }
             
-            if (payload.chat_id !== chatId) {
-                console.log('Message not for current chat, ignoring');
+            if (Number(payload.chat_id) !== Number(chatId)) {
+                console.log('❌ Message not for current chat, ignoring');
+                console.log('🔍 Payload chat_id type:', typeof payload.chat_id, 'value:', payload.chat_id);
+                console.log('🔍 Current chatId type:', typeof chatId, 'value:', chatId);
                 return;
             }
             
             setMessages(prev => {
+                console.log('📝 Current messages count:', prev.length);
                 // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
                 const messageExists = prev.some(msg => msg.id === payload.id);
                 if (messageExists) {
-                    console.log('Message already exists, skipping');
+                    console.log('⚠️ Message already exists, skipping');
                     return prev;
                 }
-                console.log('Adding new message to state');
-                return [...prev, payload];
+                console.log('✅ Adding new message to state');
+                const newMessages = [...prev, payload];
+                console.log('📝 New messages count:', newMessages.length);
+                return newMessages;
             });
         };
 
         const handleTyping = ({ chatId: id, userId, isTyping: typing }) => {
-            if (id !== chatId || userId === String(currentUser.id)) return;
+            if (Number(id) !== Number(chatId) || userId === String(currentUser.id)) return;
             setIsTyping(typing);
             if (typing) {
                 clearTimeout(typingTimeoutRef.current);
@@ -275,7 +284,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         socket.on('message:new', handleNewMessage);
         socket.on('typing', handleTyping);
         socket.on('message:read', ({ chatId: id, messageId }) => {
-            if (id !== chatId) return;
+            if (Number(id) !== Number(chatId)) return;
             setMessages(prev => prev.map(m => ({
                 ...m,
                 is_read_by_peer: m.user_id === currentUser.id ? (m.id <= messageId) : m.is_read_by_peer
