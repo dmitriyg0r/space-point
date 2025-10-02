@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import './ChatItem.css'
 
-const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
+const ChatItem = ({user, chat, onClick, isSelected, currentUser, networkOnline}) => {
     const formatTime = (timestamp) => {
         if (!timestamp) return '';
         const date = new Date(timestamp);
@@ -74,7 +74,7 @@ const ChatItem = ({user, chat, onClick, isSelected, currentUser}) => {
     };
 
     return (
-        <div className={`chat-item ${isSelected ? 'chat-item-selected' : ''}`} onClick={onClick}>
+        <div className={`chat-item ${isSelected ? 'chat-item-selected' : ''} ${!networkOnline ? 'offline' : ''}`} onClick={onClick}>
             <div className='chat-item-avatar'>
                 <div className="avatar-glow"></div>
                 <div className="avatar-frame">

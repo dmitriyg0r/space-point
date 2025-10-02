@@ -4,7 +4,7 @@ import './ChatList.css'
 import ChatItem from "./ChatItem";
 import { Users, MessageCircle, Satellite } from "lucide-react";
 
-const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
+const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser, loading, networkOnline }) => {
     const [selectedId, setSelectedId] = useState(null);
     const [activeTab, setActiveTab] = useState('chats');
 
@@ -31,9 +31,9 @@ const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
                         </div>
                         <div className="title-text">
                             <h1>QUANTUM COMM</h1>
-                            <div className="connection-status">
+                            <div className={`connection-status ${networkOnline ? 'online' : 'offline'}`}>
                                 <div className="status-dot"></div>
-                                <span className="status-text">ONLINE</span>
+                                <span className="status-text">{networkOnline ? 'ONLINE' : 'OFFLINE'}</span>
                             </div>
                         </div>
                     </div>
@@ -58,11 +58,21 @@ const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
             </div>
 
             <div className="chat-list-items">
-                {activeTab === 'chats' ? (
+                {loading ? (
+                    <div className="loading-list">
+                        <div className="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <p className="loading-text">[SCANNING] Поиск каналов связи...</p>
+                    </div>
+                ) : activeTab === 'chats' ? (
                     chats.length === 0 ? (
                         <div className="empty-list">
                             <MessageCircle className="empty-icon" />
                             <p className="empty-text">[NO_CHANNELS] Каналы не найдены</p>
+                            {!networkOnline && <p className="offline-hint">Проверьте соединение с сетью</p>}
                         </div>
                     ) : (
                         chats.map(chat => (
@@ -72,6 +82,7 @@ const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
                                 isSelected={selectedId === chat.id}
                                 onClick={() => handleChatClick(chat)}
                                 currentUser={currentUser}
+                                networkOnline={networkOnline}
                             />
                         ))
                     )
@@ -80,6 +91,7 @@ const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
                         <div className="empty-list">
                             <Users className="empty-icon" />
                             <p className="empty-text">[NO_SIGNAL] Экипаж не найден</p>
+                            {!networkOnline && <p className="offline-hint">Проверьте соединение с сетью</p>}
                         </div>
                     ) : (
                         users.map(user => (
@@ -89,6 +101,7 @@ const ChatList = ({ users, chats, onUserSelect, onChatSelect, currentUser}) => {
                                 isSelected={selectedId === user.id}
                                 onClick={() => handleUserClick(user)}
                                 currentUser={currentUser}
+                                networkOnline={networkOnline}
                             />
                         ))
                     )

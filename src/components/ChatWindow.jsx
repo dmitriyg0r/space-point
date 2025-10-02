@@ -1,19 +1,23 @@
 // ChatWindow.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './ChatWindow.css';
 import axios from 'axios';
 import { io as socketIOClient } from 'socket.io-client';
-import { Send, Satellite, Zap } from 'lucide-react';
+import { Send, Satellite, Zap, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 
-const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
+const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [chatId, setChatId] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
+    const [error, setError] = useState(null);
+    const [connectionStatus, setConnectionStatus] = useState('connecting');
+    const [retryCount, setRetryCount] = useState(0);
     const socketRef = useRef(null);
     const typingTimeoutRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const reconnectTimeoutRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,20 +59,69 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         getOrCreateChat();
     }, [user, chat, currentUser, isPrivateChat]);
 
-    // Инициализация Socket.IO
-    useEffect(() => {
-        if (!currentUser) return;
+    // Инициализация Socket.IO с обработкой переподключения
+    const initializeSocket = useCallback(() => {
+        if (!currentUser || !networkOnline) return;
 
-        const socket = socketRef.current || socketIOClient('http://localhost:3001', {
-            transports: ['websocket'],
-            auth: { userId: currentUser.id }
-        });
-        socketRef.current = socket;
+        try {
+            const socket = socketIOClient('http://localhost:3001', {
+                transports: ['websocket'],
+                auth: { userId: currentUser.id },
+                timeout: 10000,
+                forceNew: false
+            });
+
+            socket.on('connect', () => {
+                setConnectionStatus('connected');
+                setError(null);
+                setRetryCount(0);
+            });
+
+            socket.on('disconnect', (reason) => {
+                setConnectionStatus('disconnected');
+                if (reason === 'io server disconnect') {
+                    // Сервер принудительно отключил соединение
+                    socket.connect();
+                }
+            });
+
+            socket.on('connect_error', (error) => {
+                setConnectionStatus('error');
+                setError('Ошибка подключения к серверу');
+                
+                // Автоматическое переподключение с экспоненциальной задержкой
+                if (retryCount < 5) {
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    reconnectTimeoutRef.current = setTimeout(() => {
+                        setRetryCount(prev => prev + 1);
+                        socket.connect();
+                    }, delay);
+                }
+            });
+
+            socketRef.current = socket;
+            return socket;
+        } catch (error) {
+            setError('Не удалось инициализировать соединение');
+            setConnectionStatus('error');
+        }
+    }, [currentUser, networkOnline, retryCount]);
+
+    useEffect(() => {
+        if (currentUser && networkOnline) {
+            initializeSocket();
+        }
 
         return () => {
-            // не закрываем сокет при смене чата, только при размонтировании компонента
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+            }
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
         };
-    }, [currentUser]);
+    }, [initializeSocket]);
 
     // Загрузка сообщений
     useEffect(() => {
@@ -132,23 +185,35 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         };
     }, [chatId, currentUser]);
 
-    // Отправка нового сообщения
+    // Отправка нового сообщения с обработкой ошибок
     const sendMessage = async () => {
-        if (!newMessage.trim() || !chatId || !currentUser) return;
+        if (!newMessage.trim() || !chatId || !currentUser || !networkOnline) return;
+
+        const messageText = newMessage.trim();
+        setNewMessage(''); // Очищаем поле ввода сразу
 
         try {
             const response = await axios.post(`http://localhost:3001/api/chat/${chatId}/messages`, {
-                text: newMessage.trim()
+                text: messageText
             }, {
                 headers: {
                     'x-user-id': currentUser.id
-                }
+                },
+                timeout: 10000
             });
 
-            setMessages(prev => [...prev, response.data.message]);
-            setNewMessage('');
+            // Сообщение будет добавлено через сокет
+            if (!socketRef.current?.connected) {
+                // Если сокет не подключен, добавляем сообщение локально
+                setMessages(prev => [...prev, response.data.message]);
+            }
         } catch (err) {
             console.error('Error sending message:', err);
+            setError('Не удалось отправить сообщение');
+            setNewMessage(messageText); // Возвращаем текст в поле ввода
+            
+            // Автоматически убираем ошибку через 3 секунды
+            setTimeout(() => setError(null), 3000);
         }
     };
 
@@ -210,8 +275,45 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
         return '○ ОФФЛАЙН';
     };
 
+    const getConnectionIcon = () => {
+        switch (connectionStatus) {
+            case 'connected':
+                return <Wifi className="connection-icon" />;
+            case 'connecting':
+                return <Satellite className="connection-icon rotating" />;
+            case 'disconnected':
+            case 'error':
+                return <WifiOff className="connection-icon" />;
+            default:
+                return <Satellite className="connection-icon" />;
+        }
+    };
+
+    const getConnectionText = () => {
+        switch (connectionStatus) {
+            case 'connected':
+                return 'КВАНТОВАЯ СВЯЗЬ АКТИВНА';
+            case 'connecting':
+                return 'ПОДКЛЮЧЕНИЕ...';
+            case 'disconnected':
+                return 'СОЕДИНЕНИЕ ПОТЕРЯНО';
+            case 'error':
+                return 'ОШИБКА СОЕДИНЕНИЯ';
+            default:
+                return 'КВАНТОВАЯ СВЯЗЬ';
+        }
+    };
+
     return (
         <div className="chat-window">
+            {/* Error notification */}
+            {error && (
+                <div className="error-notification">
+                    <AlertCircle className="error-icon" />
+                    <span>{error}</span>
+                </div>
+            )}
+
             {/* Header */}
             <div className="chat-window-header">
                 <div className="header-background">
@@ -239,9 +341,9 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                                 </div>
                             </div>
                         </div>
-                        <div className="connection-info">
-                            <Satellite className="connection-icon" />
-                            <span className="connection-text">КВАНТОВАЯ СВЯЗЬ</span>
+                        <div className={`connection-info ${connectionStatus}`}>
+                            {getConnectionIcon()}
+                            <span className="connection-text">{getConnectionText()}</span>
                         </div>
                     </div>
                 </div>
@@ -283,20 +385,36 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat }) => {
                         value={newMessage}
                         onChange={handleInputChange}
                         onKeyPress={handleKeyPress}
-                        placeholder="ВВЕДИТЕ СООБЩЕНИЕ..."
-                        disabled={loading}
-                        className="message-input"
+                        placeholder={networkOnline ? "ВВЕДИТЕ СООБЩЕНИЕ..." : "СОЕДИНЕНИЕ ПОТЕРЯНО..."}
+                        disabled={loading || !networkOnline || connectionStatus !== 'connected'}
+                        className={`message-input ${!networkOnline ? 'disabled' : ''}`}
                     />
                     <button 
                         onClick={sendMessage} 
-                        disabled={loading || !newMessage.trim()}
-                        className="send-button"
+                        disabled={loading || !newMessage.trim() || !networkOnline || connectionStatus !== 'connected'}
+                        className={`send-button ${(!networkOnline || connectionStatus !== 'connected') ? 'disabled' : ''}`}
                     >
                         <Send className="send-icon" />
                         TRANSMIT
                     </button>
                 </div>
-                {isTyping && (
+                
+                {/* Connection status indicator */}
+                {!networkOnline && (
+                    <div className="connection-warning">
+                        <WifiOff className="warning-icon" />
+                        <span>Нет соединения с сетью</span>
+                    </div>
+                )}
+                
+                {networkOnline && connectionStatus !== 'connected' && (
+                    <div className="connection-warning">
+                        <AlertCircle className="warning-icon" />
+                        <span>Переподключение к серверу...</span>
+                    </div>
+                )}
+                
+                {isTyping && networkOnline && connectionStatus === 'connected' && (
                     <div className="typing-indicator">
                         <div className="typing-dots">
                             <span></span>

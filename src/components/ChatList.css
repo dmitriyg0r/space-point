@@ -9,6 +9,16 @@
     backdrop-filter: blur(10px);
 }
 
+@media (max-width: 768px) {
+    .chat-list {
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+    }
+}
+
 .chat-header {
     padding: 1.5rem;
     border-bottom: 1px solid rgba(6, 182, 212, 0.2);
@@ -72,7 +82,7 @@
     margin-top: 0.25rem;
 }
 
-.status-dot {
+.connection-status.online .status-dot {
     width: 8px;
     height: 8px;
     background: #4ade80;
@@ -80,8 +90,23 @@
     animation: pulse 2s infinite;
 }
 
-.status-text {
+.connection-status.offline .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.connection-status.online .status-text {
     color: #4ade80;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.connection-status.offline .status-text {
+    color: #ef4444;
     font-family: 'Courier New', monospace;
     font-size: 0.75rem;
     font-weight: 600;
@@ -155,4 +180,85 @@
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
     margin: 0;
+}
+
+.offline-hint {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: rgba(239, 68, 68, 0.7);
+    margin: 0.5rem 0 0 0;
+    text-align: center;
+}
+
+.loading-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: rgba(6, 182, 212, 0.7);
+    text-align: center;
+    gap: 1rem;
+}
+
+.loading-list .loading-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.loading-list .loading-dots span {
+    width: 8px;
+    height: 8px;
+    background: #06b6d4;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-list .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-list .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+.loading-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .chat-header {
+        padding: 0.75rem;
+        flex: 1;
+    }
+    
+    .header-content {
+        margin-bottom: 0;
+    }
+    
+    .header-title {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+    
+    .title-text h1 {
+        font-size: 1rem;
+    }
+    
+    .connection-status {
+        margin-top: 0;
+    }
+    
+    .chat-tabs {
+        display: none;
+    }
+    
+    .chat-list-items {
+        display: none;
+    }
 }
