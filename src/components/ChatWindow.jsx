@@ -72,12 +72,14 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
             });
 
             socket.on('connect', () => {
+                console.log('WebSocket connected successfully');
                 setConnectionStatus('connected');
                 setError(null);
                 setRetryCount(0);
             });
 
             socket.on('disconnect', (reason) => {
+                console.log('WebSocket disconnected:', reason);
                 setConnectionStatus('disconnected');
                 if (reason === 'io server disconnect') {
                     // Сервер принудительно отключил соединение
@@ -86,6 +88,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
             });
 
             socket.on('connect_error', (error) => {
+                console.log('WebSocket connection error:', error);
                 setConnectionStatus('error');
                 setError('Ошибка подключения к серверу');
                 
@@ -151,11 +154,33 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
         const socket = socketRef.current;
         if (!socket || !chatId) return;
 
+        console.log('Joining chat room:', chatId);
         socket.emit('chat:join', chatId);
 
         const handleNewMessage = (payload) => {
-            if (payload.chat_id !== chatId) return;
-            setMessages(prev => [...prev, payload]);
+            console.log('Received new message via WebSocket:', payload);
+            
+            // Проверяем корректность данных
+            if (!payload || !payload.id || !payload.text) {
+                console.log('Invalid message payload, ignoring');
+                return;
+            }
+            
+            if (payload.chat_id !== chatId) {
+                console.log('Message not for current chat, ignoring');
+                return;
+            }
+            
+            setMessages(prev => {
+                // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
+                const messageExists = prev.some(msg => msg.id === payload.id);
+                if (messageExists) {
+                    console.log('Message already exists, skipping');
+                    return prev;
+                }
+                console.log('Adding new message to state');
+                return [...prev, payload];
+            });
         };
 
         const handleTyping = ({ chatId: id, userId, isTyping: typing }) => {
@@ -187,7 +212,15 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
 
     // Отправка нового сообщения с обработкой ошибок
     const sendMessage = async () => {
-        if (!newMessage.trim() || !chatId || !currentUser || !networkOnline) return;
+        if (!newMessage.trim() || !chatId || !currentUser || !networkOnline) {
+            console.log('Cannot send message: missing requirements', {
+                hasMessage: !!newMessage.trim(),
+                hasChatId: !!chatId,
+                hasCurrentUser: !!currentUser,
+                networkOnline
+            });
+            return;
+        }
 
         const messageText = newMessage.trim();
         setNewMessage(''); // Очищаем поле ввода сразу
@@ -202,10 +235,18 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline }) =
                 timeout: 10000
             });
 
-            // Сообщение будет добавлено через сокет
-            if (!socketRef.current?.connected) {
-                // Если сокет не подключен, добавляем сообщение локально
-                setMessages(prev => [...prev, response.data.message]);
+            console.log('Message sent successfully:', response.data);
+
+            // Всегда добавляем сообщение локально сразу для мгновенного отображения
+            if (response.data.message) {
+                setMessages(prev => {
+                    // Проверяем, нет ли уже такого сообщения (избегаем дублирования)
+                    const messageExists = prev.some(msg => msg.id === response.data.message.id);
+                    if (messageExists) {
+                        return prev;
+                    }
+                    return [...prev, response.data.message];
+                });
             }
         } catch (err) {
             console.error('Error sending message:', err);

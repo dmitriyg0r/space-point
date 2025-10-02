@@ -227,21 +227,6 @@ const Chat = () => {
 
     return (
         <div className="chat-page">
-            {/* Floating particles */}
-            <div className="floating-particles">
-                {[...Array(20)].map((_, i) => (
-                    <div
-                        key={i}
-                        className="particle"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 4}s`,
-                            animationDuration: `${2 + Math.random() * 3}s`
-                        }}
-                    />
-                ))}
-            </div>
 
             {/* Connection status indicator */}
             {showStatusBar && (
