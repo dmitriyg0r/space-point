@@ -11,7 +11,7 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
     const [chatId, setChatId] = useState(null);
     const [isTyping, setIsTyping] = useState(false);
     const [error, setError] = useState(null);
-    const [connectionStatus, setConnectionStatus] = useState('connecting');
+    const [connectionStatus, setConnectionStatus] = useState('disconnected');
     const [retryCount, setRetryCount] = useState(0);
     // socketRef заменен на переданный socket prop
     const typingTimeoutRef = useRef(null);
@@ -78,10 +78,22 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
 
     // Проверка состояния переданного socket
     const checkSocketStatus = useCallback(() => {
+        console.log('🔍 Checking socket status...');
+        console.log('🔍 Socket exists:', !!socket);
+        console.log('🔍 NetworkOnline:', networkOnline);
+        console.log('🔍 CurrentUser:', !!currentUser);
+        
         if (!socket) {
             console.log('❌ No socket provided to ChatWindow');
             setConnectionStatus('error');
             setError('WebSocket не инициализирован');
+            return;
+        }
+
+        if (!networkOnline) {
+            console.log('🌐 Network is offline');
+            setConnectionStatus('disconnected');
+            setError('Нет соединения с сетью');
             return;
         }
 
@@ -91,17 +103,55 @@ const ChatWindow = ({ user, chat, currentUser, isPrivateChat, networkOnline, soc
             setError(null);
         } else {
             console.log('⚠️ Socket exists but not connected');
-            setConnectionStatus('disconnected');
+            setConnectionStatus('connecting');
+            setError('Подключение...');
         }
-    }, [socket]);
+    }, [socket, networkOnline]);
 
     // Инициализация с переданным socket
     useEffect(() => {
-        if (socket && currentUser && networkOnline) {
+        if (socket && currentUser) {
             console.log('Checking socket status for user:', currentUser.id);
             checkSocketStatus();
+
+            // Добавляем обработчики событий socket
+            const handleConnect = () => {
+                console.log('🔌 Socket connected in ChatWindow');
+                setConnectionStatus('connected');
+                setError(null);
+            };
+
+            const handleDisconnect = (reason) => {
+                console.log('🔌 Socket disconnected in ChatWindow:', reason);
+                setConnectionStatus('disconnected');
+                setError('Соединение потеряно');
+            };
+
+            const handleConnectError = (error) => {
+                console.log('🔌 Socket connection error in ChatWindow:', error);
+                setConnectionStatus('error');
+                setError('Ошибка подключения');
+            };
+
+            socket.on('connect', handleConnect);
+            socket.on('disconnect', handleDisconnect);
+            socket.on('connect_error', handleConnectError);
+
+            return () => {
+                socket.off('connect', handleConnect);
+                socket.off('disconnect', handleDisconnect);
+                socket.off('connect_error', handleConnectError);
+            };
         }
-    }, [socket, currentUser, networkOnline, checkSocketStatus]);
+    }, [socket, currentUser, checkSocketStatus]);
+
+    // Отслеживание изменений networkOnline
+    useEffect(() => {
+        console.log('🌐 NetworkOnline changed:', networkOnline);
+        if (socket && currentUser) {
+            checkSocketStatus();
+        }
+    }, [networkOnline, socket, currentUser, checkSocketStatus]);
 
     // Загрузка сообщений
     useEffect(() => {
